@@ -1,0 +1,444 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<deploy
+ date="2025.01.16.08:42:44"
+ outputDirectory="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/">
+ <perimeter>
+  <parameter
+     name="AUTO_GENERATION_ID"
+     type="Integer"
+     defaultValue="0"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_UNIQUE_ID"
+     type="String"
+     defaultValue=""
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_FAMILY"
+     type="String"
+     defaultValue="Cyclone V"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE"
+     type="String"
+     defaultValue="5CEBA9F23C8"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_DEVICE_SPEEDGRADE"
+     type="String"
+     defaultValue="8"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_TS_CLK_CLOCK_RATE"
+     type="Long"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_TS_CLK_CLOCK_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_TS_CLK_RESET_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CMS0041_CLOCK_CLOCK_RATE"
+     type="Long"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CMS0041_CLOCK_CLOCK_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <parameter
+     name="AUTO_CMS0041_CLOCK_RESET_DOMAIN"
+     type="Integer"
+     defaultValue="-1"
+     onHdl="0"
+     affectsHdl="1" />
+  <interface name="Baseband" kind="conduit" start="0">
+   <property name="associatedClock" value="cms0041_clock" />
+   <property name="associatedReset" value="reset_n" />
+   <port name="baseband_i" direction="output" role="i" width="14" />
+   <port name="baseband_q" direction="output" role="q" width="14" />
+   <port name="baseband_valid" direction="output" role="valid" width="1" />
+  </interface>
+  <interface name="QDR" kind="conduit" start="0">
+   <property name="associatedClock" value="" />
+   <property name="associatedReset" value="" />
+   <port name="fft_wr_addr" direction="output" role="fft_wr_addr" width="19" />
+   <port name="fft_wr_data" direction="output" role="fft_wr_data" width="36" />
+   <port name="fft_wr_ena" direction="output" role="fft_wr_ena" width="1" />
+   <port name="fft_rd_addr" direction="output" role="fft_rd_addr" width="19" />
+   <port name="fft_rd_data" direction="input" role="fft_rd_data" width="36" />
+   <port name="osg_wr_addr" direction="output" role="osg_wr_addr" width="19" />
+   <port name="osg_wr_data" direction="output" role="osg_wr_data" width="36" />
+   <port name="osg_wr_ena" direction="output" role="osg_wr_ena" width="1" />
+   <port name="osg_rd_addr" direction="output" role="osg_rd_addr" width="19" />
+   <port name="osg_rd_data" direction="input" role="osg_rd_data" width="36" />
+  </interface>
+  <interface name="RAM" kind="conduit" start="0">
+   <property name="associatedClock" value="" />
+   <property name="associatedReset" value="" />
+   <port name="ram_cs" direction="output" role="cs" width="1" />
+   <port
+       name="ram_burst_access"
+       direction="output"
+       role="burst_access"
+       width="1" />
+   <port name="ram_burst_size" direction="output" role="burst_size" width="4" />
+   <port name="ram_address" direction="output" role="address" width="24" />
+   <port name="ram_wr_en" direction="output" role="wr_en" width="1" />
+   <port name="ram_wrdata" direction="output" role="wrdata" width="32" />
+   <port name="ram_rd_en" direction="output" role="rd_en" width="1" />
+   <port name="ram_rddata" direction="input" role="rddata" width="32" />
+   <port
+       name="ram_rddata_valid"
+       direction="input"
+       role="rddata_valid"
+       width="1" />
+   <port name="ram_busy" direction="input" role="busy" width="1" />
+   <port name="ram_available" direction="input" role="available" width="1" />
+   <port name="ram_empty" direction="input" role="empty" width="1" />
+  </interface>
+  <interface name="TS" kind="conduit" start="0">
+   <property name="associatedClock" value="" />
+   <property name="associatedReset" value="" />
+   <port name="ts_data_valid" direction="input" role="data_valid" width="1" />
+   <port name="ts_data" direction="input" role="data" width="8" />
+   <port name="ts_data_refclk" direction="output" role="data_refclk" width="1" />
+   <port name="ts_data_busy" direction="output" role="data_busy" width="1" />
+  </interface>
+  <interface name="TS_Clk" kind="clock" start="0">
+   <property name="clockRate" value="0" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="ts_data_clk" direction="input" role="clk" width="1" />
+  </interface>
+  <interface name="avalon_slave" kind="avalon" start="0">
+   <property name="addressAlignment" value="DYNAMIC" />
+   <property name="addressGroup" value="0" />
+   <property name="addressSpan" value="1048576" />
+   <property name="addressUnits" value="SYMBOLS" />
+   <property name="alwaysBurstMaxBurst" value="false" />
+   <property name="associatedClock" value="cms0041_clock" />
+   <property name="associatedReset" value="reset_n" />
+   <property name="bitsPerSymbol" value="8" />
+   <property name="bridgedAddressOffset" value="0" />
+   <property name="bridgesToMaster" value="" />
+   <property name="burstOnBurstBoundariesOnly" value="false" />
+   <property name="burstcountUnits" value="WORDS" />
+   <property name="constantBurstBehavior" value="false" />
+   <property name="explicitAddressSpan" value="0" />
+   <property name="holdTime" value="0" />
+   <property name="interleaveBursts" value="false" />
+   <property name="isBigEndian" value="false" />
+   <property name="isFlash" value="false" />
+   <property name="isMemoryDevice" value="false" />
+   <property name="isNonVolatileStorage" value="false" />
+   <property name="linewrapBursts" value="false" />
+   <property name="maximumPendingReadTransactions" value="0" />
+   <property name="maximumPendingWriteTransactions" value="0" />
+   <property name="minimumUninterruptedRunLength" value="1" />
+   <property name="printableDevice" value="false" />
+   <property name="readLatency" value="0" />
+   <property name="readWaitStates" value="1" />
+   <property name="readWaitTime" value="1" />
+   <property name="registerIncomingSignals" value="false" />
+   <property name="registerOutgoingSignals" value="false" />
+   <property name="setupTime" value="0" />
+   <property name="timingUnits" value="Cycles" />
+   <property name="transparentBridge" value="false" />
+   <property name="wellBehavedWaitrequest" value="false" />
+   <property name="writeLatency" value="0" />
+   <property name="writeWaitStates" value="0" />
+   <property name="writeWaitTime" value="0" />
+   <port name="reg_address" direction="input" role="address" width="20" />
+   <port name="reg_wr_data" direction="input" role="writedata" width="32" />
+   <port name="reg_wr_en" direction="input" role="write" width="1" />
+   <port name="reg_chip_en" direction="input" role="chipselect" width="1" />
+   <port name="reg_rd_data" direction="output" role="readdata" width="32" />
+   <port name="reg_cmd_ack" direction="output" role="waitrequest_n" width="1" />
+  </interface>
+  <interface name="cms0041_clock" kind="clock" start="0">
+   <property name="clockRate" value="0" />
+   <property name="externallyDriven" value="false" />
+   <property name="ptfSchematicName" value="" />
+   <port name="clock" direction="input" role="clk" width="1" />
+  </interface>
+  <interface name="irq" kind="interrupt" start="0">
+   <property name="associatedAddressablePoint" value="DVBT2_mod.avalon_slave" />
+   <property name="associatedClock" value="" />
+   <property name="associatedReset" value="" />
+   <property name="bridgedReceiverOffset" value="0" />
+   <property name="bridgesToReceiver" value="" />
+   <property name="irqScheme" value="NONE" />
+   <port name="reg_irq" direction="output" role="irq" width="1" />
+  </interface>
+  <interface name="reset_n" kind="reset" start="0">
+   <property name="associatedClock" value="cms0041_clock" />
+   <property name="synchronousEdges" value="DEASSERT" />
+   <port name="reset_n" direction="input" role="reset_n" width="1" />
+  </interface>
+ </perimeter>
+ <entity
+   path=""
+   parameterizationKey="DVBT2_mod:1.0:AUTO_CMS0041_CLOCK_CLOCK_DOMAIN=-1,AUTO_CMS0041_CLOCK_CLOCK_RATE=-1,AUTO_CMS0041_CLOCK_RESET_DOMAIN=-1,AUTO_DEVICE=5CEBA9F23C8,AUTO_DEVICE_FAMILY=Cyclone V,AUTO_DEVICE_SPEEDGRADE=8,AUTO_GENERATION_ID=1737013363,AUTO_TS_CLK_CLOCK_DOMAIN=-1,AUTO_TS_CLK_CLOCK_RATE=-1,AUTO_TS_CLK_RESET_DOMAIN=-1,AUTO_UNIQUE_ID=(DvbT2Mod:6.8:AUTO_DEVICE_FAMILY=Cyclone V,BUILD_AD9789_SUPPORT=0,BUILD_AD9857_SUPPORT=0,BUILD_AD9957_SUPPORT=0,BUILD_BASE_TO_IF=0,BUILD_CALCULATE_TS_RATE=1,BUILD_CITL_CACHE=0,BUILD_CPU_BYTE_ADDR_WIDTH=20,BUILD_CRITICAL_FILTER=0,BUILD_DAC_PROGRAM=0,BUILD_DEVICE_FAMILY=ALT_GENERIC,BUILD_FEF_SUPPORT=0,BUILD_FFT_WINDOW=0,BUILD_IDV_ADDR_EXTRACTION=0,BUILD_IF_ONLY=0,BUILD_INBAND_EQUALISER=0,BUILD_L1ACE_PROCESSOR=0,BUILD_MAX_FFT_SIZE=8192,BUILD_OSG_USE_EXTERNAL_RAM=1,BUILD_P2_BIAS_CELLS=0,BUILD_PAPR=1,BUILD_PCR_SUPPORT=1,BUILD_PLL_PROGRAM=0,BUILD_PRBS_PACKETS=1,BUILD_PRE_DISTORT=1,BUILD_RAM_TEST_SUPPORT=1,BUILD_REGBANK_INITIALISATION=0,BUILD_RIF=0,BUILD_SDRAM_WORD_ADDR_WIDTH=24,BUILD_SFN_SUPPORT=0,BUILD_SUPPORTED_PLP_NUM=1,BUILD_T2ADAPT=1,BUILD_T2MI=0,CLOCK_FREQUENCY_KHZ=100000,CLOCK_RIF_FREQUENCY_KHZ=0,DAC_PROG_CLOCK_FREQUENCY_KHZ=100000,GUI_BASEBAND_OUTPUT=true,GUI_BASE_TO_IF=true,GUI_CALCULATE_TS_RATE=true,GUI_CLOCK_RIF_FREQUENCY_KHZ=100000,GUI_CRITICAL_FILTER=Normal,GUI_DAC_PROGRAM=true,GUI_DAC_PROG_CLOCK_FREQUENCY_KHZ=100000,GUI_DEVICE_FAMILY=Generic,GUI_DUAL_CLOCK_DOMAIN=false,GUI_FEF_SUPPORT=false,GUI_FFT_WINDOW=false,GUI_IDV_ADDR_EXTRACTION=false,GUI_IF_ONLY=true,GUI_INBAND_EQUALISER=false,GUI_L1ACE_PROCESSOR=false,GUI_MAX_FFT_SIZE=8k,GUI_OSG_USE_INTERNAL_RAM=false,GUI_P2_BIAS_CELLS=false,GUI_PAPR=true,GUI_PCR_SUPPORT=true,GUI_PLL_PROGRAM=None,GUI_PLL_PROG_CLOCK_FREQUENCY_KHZ=100000,GUI_PRBS_PACKETS=true,GUI_PRE_DISTORT=true,GUI_RAM_TEST_SUPPORT=false,GUI_REGBANK_INITIALISATION=false,GUI_RIF=None,GUI_SEPARATE_DAC_PROG_CLOCK=Core Clock,GUI_SEPARATE_PLL_PROG_CLOCK=Core Clock,GUI_SFN_SUPPORT=false,GUI_SUPPORTED_PLP_NUM=1,GUI_T2ADAPT=true,GUI_T2MI=false,GUI_USE_CONFIG_PACK=false,PLL_PROG_CLOCK_FREQUENCY_KHZ=0)"
+   instancePathKey="DVBT2_mod"
+   kind="DVBT2_mod"
+   version="1.0"
+   name="DVBT2_mod">
+  <parameter name="AUTO_CMS0041_CLOCK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_GENERATION_ID" value="1737013363" />
+  <parameter name="AUTO_DEVICE" value="5CEBA9F23C8" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
+  <parameter name="AUTO_CMS0041_CLOCK_RESET_DOMAIN" value="-1" />
+  <parameter name="AUTO_CMS0041_CLOCK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_UNIQUE_ID" value="" />
+  <parameter name="AUTO_TS_CLK_CLOCK_RATE" value="-1" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="8" />
+  <parameter name="AUTO_TS_CLK_CLOCK_DOMAIN" value="-1" />
+  <parameter name="AUTO_TS_CLK_RESET_DOMAIN" value="-1" />
+  <generatedFiles>
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/DVBT2_mod.vhd"
+       type="VHDL" />
+  </generatedFiles>
+  <childGeneratedFiles>
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/p_cms0041_comp.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/p_cms0041_pack.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/p_cms0041_config.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/ea_cms0041_wrap.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/ea_cms0041.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/oo100.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/oiil1.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/O01LOL.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/p_cms0042_pack.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/o10iol.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/p_cms0072_pack.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/ol0ili.ocp"
+       type="OTHER"
+       attributes="" />
+  </childGeneratedFiles>
+  <sourceFiles>
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod.qsys" />
+  </sourceFiles>
+  <childSourceFiles>
+   <file
+       path="C:/intelfpga/17.1/ip/commsonic/DvbT2Mod-v6.8/lib/DvbT2Mod_hw.tcl" />
+   <file
+       path="C:/intelfpga/17.1/ip/commsonic/DvbT2Mod-v6.8/lib/ea_cms0041_wrap.vhd" />
+  </childSourceFiles>
+  <messages>
+   <message level="Debug" culprit="DVBT2_mod">queue size: 0 starting:DVBT2_mod "DVBT2_mod"</message>
+   <message level="Progress" culprit="min"></message>
+   <message level="Progress" culprit="max"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Progress" culprit="current"></message>
+   <message level="Debug">Transform: CustomInstructionTransform</message>
+   <message level="Debug">No custom instruction connections, skipping transform </message>
+   <message level="Debug" culprit="merlin_custom_instruction_transform"><![CDATA[After transform: <b>1</b> modules, <b>0</b> connections]]></message>
+   <message level="Debug">Transform: MMTransform</message>
+   <message level="Debug">Transform: InterruptMapperTransform</message>
+   <message level="Debug">Transform: InterruptSyncTransform</message>
+   <message level="Debug">Transform: InterruptFanoutTransform</message>
+   <message level="Debug">Transform: AvalonStreamingTransform</message>
+   <message level="Debug">Transform: ResetAdaptation</message>
+   <message level="Debug" culprit="DVBT2_mod"><![CDATA["<b>DVBT2_mod</b>" reuses <b>DvbT2Mod</b> "<b>submodules/cms0041_wrap</b>"]]></message>
+   <message level="Debug" culprit="DVBT2_mod">queue size: 0 starting:DvbT2Mod "submodules/cms0041_wrap"</message>
+   <message level="Info" culprit="DvbT2Mod_0"><![CDATA["<b>DVBT2_mod</b>" instantiated <b>DvbT2Mod</b> "<b>DvbT2Mod_0</b>"]]></message>
+  </messages>
+ </entity>
+ <entity
+   path="submodules/"
+   parameterizationKey="DvbT2Mod:6.8:AUTO_DEVICE_FAMILY=Cyclone V,BUILD_AD9789_SUPPORT=0,BUILD_AD9857_SUPPORT=0,BUILD_AD9957_SUPPORT=0,BUILD_BASE_TO_IF=0,BUILD_CALCULATE_TS_RATE=1,BUILD_CITL_CACHE=0,BUILD_CPU_BYTE_ADDR_WIDTH=20,BUILD_CRITICAL_FILTER=0,BUILD_DAC_PROGRAM=0,BUILD_DEVICE_FAMILY=ALT_GENERIC,BUILD_FEF_SUPPORT=0,BUILD_FFT_WINDOW=0,BUILD_IDV_ADDR_EXTRACTION=0,BUILD_IF_ONLY=0,BUILD_INBAND_EQUALISER=0,BUILD_L1ACE_PROCESSOR=0,BUILD_MAX_FFT_SIZE=8192,BUILD_OSG_USE_EXTERNAL_RAM=1,BUILD_P2_BIAS_CELLS=0,BUILD_PAPR=1,BUILD_PCR_SUPPORT=1,BUILD_PLL_PROGRAM=0,BUILD_PRBS_PACKETS=1,BUILD_PRE_DISTORT=1,BUILD_RAM_TEST_SUPPORT=1,BUILD_REGBANK_INITIALISATION=0,BUILD_RIF=0,BUILD_SDRAM_WORD_ADDR_WIDTH=24,BUILD_SFN_SUPPORT=0,BUILD_SUPPORTED_PLP_NUM=1,BUILD_T2ADAPT=1,BUILD_T2MI=0,CLOCK_FREQUENCY_KHZ=100000,CLOCK_RIF_FREQUENCY_KHZ=0,DAC_PROG_CLOCK_FREQUENCY_KHZ=100000,GUI_BASEBAND_OUTPUT=true,GUI_BASE_TO_IF=true,GUI_CALCULATE_TS_RATE=true,GUI_CLOCK_RIF_FREQUENCY_KHZ=100000,GUI_CRITICAL_FILTER=Normal,GUI_DAC_PROGRAM=true,GUI_DAC_PROG_CLOCK_FREQUENCY_KHZ=100000,GUI_DEVICE_FAMILY=Generic,GUI_DUAL_CLOCK_DOMAIN=false,GUI_FEF_SUPPORT=false,GUI_FFT_WINDOW=false,GUI_IDV_ADDR_EXTRACTION=false,GUI_IF_ONLY=true,GUI_INBAND_EQUALISER=false,GUI_L1ACE_PROCESSOR=false,GUI_MAX_FFT_SIZE=8k,GUI_OSG_USE_INTERNAL_RAM=false,GUI_P2_BIAS_CELLS=false,GUI_PAPR=true,GUI_PCR_SUPPORT=true,GUI_PLL_PROGRAM=None,GUI_PLL_PROG_CLOCK_FREQUENCY_KHZ=100000,GUI_PRBS_PACKETS=true,GUI_PRE_DISTORT=true,GUI_RAM_TEST_SUPPORT=false,GUI_REGBANK_INITIALISATION=false,GUI_RIF=None,GUI_SEPARATE_DAC_PROG_CLOCK=Core Clock,GUI_SEPARATE_PLL_PROG_CLOCK=Core Clock,GUI_SFN_SUPPORT=false,GUI_SUPPORTED_PLP_NUM=1,GUI_T2ADAPT=true,GUI_T2MI=false,GUI_USE_CONFIG_PACK=false,PLL_PROG_CLOCK_FREQUENCY_KHZ=0"
+   instancePathKey="DVBT2_mod:.:DvbT2Mod_0"
+   kind="DvbT2Mod"
+   version="6.8"
+   name="cms0041_wrap">
+  <parameter name="GUI_SEPARATE_PLL_PROG_CLOCK" value="Core Clock" />
+  <parameter name="GUI_PAPR" value="true" />
+  <parameter name="BUILD_CRITICAL_FILTER" value="0" />
+  <parameter name="GUI_CALCULATE_TS_RATE" value="true" />
+  <parameter name="BUILD_L1ACE_PROCESSOR" value="0" />
+  <parameter name="GUI_SFN_SUPPORT" value="false" />
+  <parameter name="BUILD_DAC_PROGRAM" value="0" />
+  <parameter name="BUILD_IDV_ADDR_EXTRACTION" value="0" />
+  <parameter name="BUILD_P2_BIAS_CELLS" value="0" />
+  <parameter name="BUILD_MAX_FFT_SIZE" value="8192" />
+  <parameter name="GUI_FEF_SUPPORT" value="false" />
+  <parameter name="BUILD_CALCULATE_TS_RATE" value="1" />
+  <parameter name="CLOCK_RIF_FREQUENCY_KHZ" value="0" />
+  <parameter name="BUILD_REGBANK_INITIALISATION" value="0" />
+  <parameter name="GUI_INBAND_EQUALISER" value="false" />
+  <parameter name="GUI_USE_CONFIG_PACK" value="false" />
+  <parameter name="GUI_PLL_PROGRAM" value="None" />
+  <parameter name="GUI_P2_BIAS_CELLS" value="false" />
+  <parameter name="GUI_MAX_FFT_SIZE" value="8k" />
+  <parameter name="GUI_RAM_TEST_SUPPORT" value="false" />
+  <parameter name="CLOCK_FREQUENCY_KHZ" value="100000" />
+  <parameter name="BUILD_AD9789_SUPPORT" value="0" />
+  <parameter name="BUILD_PAPR" value="1" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
+  <parameter name="PLL_PROG_CLOCK_FREQUENCY_KHZ" value="0" />
+  <parameter name="BUILD_AD9957_SUPPORT" value="0" />
+  <parameter name="GUI_PRE_DISTORT" value="true" />
+  <parameter name="GUI_T2ADAPT" value="true" />
+  <parameter name="GUI_OSG_USE_INTERNAL_RAM" value="false" />
+  <parameter name="GUI_IF_ONLY" value="true" />
+  <parameter name="BUILD_INBAND_EQUALISER" value="0" />
+  <parameter name="GUI_PCR_SUPPORT" value="true" />
+  <parameter name="BUILD_SDRAM_WORD_ADDR_WIDTH" value="24" />
+  <parameter name="GUI_CLOCK_RIF_FREQUENCY_KHZ" value="100000" />
+  <parameter name="GUI_DAC_PROG_CLOCK_FREQUENCY_KHZ" value="100000" />
+  <parameter name="BUILD_AD9857_SUPPORT" value="0" />
+  <parameter name="GUI_SUPPORTED_PLP_NUM" value="1" />
+  <parameter name="GUI_T2MI" value="false" />
+  <parameter name="BUILD_CPU_BYTE_ADDR_WIDTH" value="20" />
+  <parameter name="BUILD_OSG_USE_EXTERNAL_RAM" value="1" />
+  <parameter name="GUI_PRBS_PACKETS" value="true" />
+  <parameter name="GUI_REGBANK_INITIALISATION" value="false" />
+  <parameter name="BUILD_FEF_SUPPORT" value="0" />
+  <parameter name="BUILD_RIF" value="0" />
+  <parameter name="GUI_FFT_WINDOW" value="false" />
+  <parameter name="BUILD_SUPPORTED_PLP_NUM" value="1" />
+  <parameter name="BUILD_PLL_PROGRAM" value="0" />
+  <parameter name="BUILD_CITL_CACHE" value="0" />
+  <parameter name="BUILD_PRBS_PACKETS" value="1" />
+  <parameter name="GUI_RIF" value="None" />
+  <parameter name="GUI_DEVICE_FAMILY" value="Generic" />
+  <parameter name="GUI_BASE_TO_IF" value="true" />
+  <parameter name="GUI_CRITICAL_FILTER" value="Normal" />
+  <parameter name="BUILD_IF_ONLY" value="0" />
+  <parameter name="BUILD_SFN_SUPPORT" value="0" />
+  <parameter name="BUILD_T2ADAPT" value="1" />
+  <parameter name="BUILD_DEVICE_FAMILY" value="ALT_GENERIC" />
+  <parameter name="GUI_DAC_PROGRAM" value="true" />
+  <parameter name="BUILD_FFT_WINDOW" value="0" />
+  <parameter name="GUI_IDV_ADDR_EXTRACTION" value="false" />
+  <parameter name="BUILD_T2MI" value="0" />
+  <parameter name="GUI_BASEBAND_OUTPUT" value="true" />
+  <parameter name="BUILD_BASE_TO_IF" value="0" />
+  <parameter name="BUILD_PRE_DISTORT" value="1" />
+  <parameter name="GUI_SEPARATE_DAC_PROG_CLOCK" value="Core Clock" />
+  <parameter name="DAC_PROG_CLOCK_FREQUENCY_KHZ" value="100000" />
+  <parameter name="GUI_L1ACE_PROCESSOR" value="false" />
+  <parameter name="GUI_DUAL_CLOCK_DOMAIN" value="false" />
+  <parameter name="BUILD_PCR_SUPPORT" value="1" />
+  <parameter name="BUILD_RAM_TEST_SUPPORT" value="1" />
+  <parameter name="GUI_PLL_PROG_CLOCK_FREQUENCY_KHZ" value="100000" />
+  <generatedFiles>
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/p_cms0041_comp.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/p_cms0041_pack.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/p_cms0041_config.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/ea_cms0041_wrap.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/ea_cms0041.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/oo100.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/oiil1.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/O01LOL.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/p_cms0042_pack.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/o10iol.ocp"
+       type="OTHER"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/p_cms0072_pack.vhd"
+       type="VHDL"
+       attributes="" />
+   <file
+       path="C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/ol0ili.ocp"
+       type="OTHER"
+       attributes="" />
+  </generatedFiles>
+  <childGeneratedFiles/>
+  <sourceFiles>
+   <file
+       path="C:/intelfpga/17.1/ip/commsonic/DvbT2Mod-v6.8/lib/DvbT2Mod_hw.tcl" />
+   <file
+       path="C:/intelfpga/17.1/ip/commsonic/DvbT2Mod-v6.8/lib/ea_cms0041_wrap.vhd" />
+  </sourceFiles>
+  <childSourceFiles/>
+  <instantiator instantiator="DVBT2_mod" as="DvbT2Mod_0" />
+  <messages>
+   <message level="Debug" culprit="DVBT2_mod">queue size: 0 starting:DvbT2Mod "submodules/cms0041_wrap"</message>
+   <message level="Info" culprit="DvbT2Mod_0"><![CDATA["<b>DVBT2_mod</b>" instantiated <b>DvbT2Mod</b> "<b>DvbT2Mod_0</b>"]]></message>
+  </messages>
+ </entity>
+</deploy>

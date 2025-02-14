@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pinplan
+ variation_name="DvbT2Mod_0"
+ megafunction_name="DVBT2MOD"
+ intended_family="Cyclone V"
+ specifies="all_ports">
+ <global>
+  <pin name="clock" direction="input" scope="external" />
+  <pin name="reset_n" direction="input" scope="external" />
+  <pin name="reg_address[19..0]" direction="input" scope="external" />
+  <pin name="reg_wr_data[31..0]" direction="input" scope="external" />
+  <pin name="reg_wr_en" direction="input" scope="external" />
+  <pin name="reg_chip_en" direction="input" scope="external" />
+  <pin name="reg_rd_data[31..0]" direction="output" scope="external" />
+  <pin name="reg_cmd_ack" direction="output" scope="external" />
+  <pin name="reg_irq" direction="output" scope="external" />
+  <pin name="ts_data_clk" direction="input" scope="external" />
+  <pin name="ts_data_valid" direction="input" scope="external" />
+  <pin name="ts_data[7..0]" direction="input" scope="external" />
+  <pin name="ts_data_refclk" direction="output" scope="external" />
+  <pin name="ts_data_busy" direction="output" scope="external" />
+  <pin name="ram_cs" direction="output" scope="external" />
+  <pin name="ram_burst_access" direction="output" scope="external" />
+  <pin name="ram_burst_size[3..0]" direction="output" scope="external" />
+  <pin name="ram_address[23..0]" direction="output" scope="external" />
+  <pin name="ram_wr_en" direction="output" scope="external" />
+  <pin name="ram_wrdata[31..0]" direction="output" scope="external" />
+  <pin name="ram_rd_en" direction="output" scope="external" />
+  <pin name="ram_rddata[31..0]" direction="input" scope="external" />
+  <pin name="ram_rddata_valid" direction="input" scope="external" />
+  <pin name="ram_busy" direction="input" scope="external" />
+  <pin name="ram_available" direction="input" scope="external" />
+  <pin name="ram_empty" direction="input" scope="external" />
+  <pin name="fft_wr_addr[18..0]" direction="output" scope="external" />
+  <pin name="fft_wr_data[35..0]" direction="output" scope="external" />
+  <pin name="fft_wr_ena" direction="output" scope="external" />
+  <pin name="fft_rd_addr[18..0]" direction="output" scope="external" />
+  <pin name="fft_rd_data[35..0]" direction="input" scope="external" />
+  <pin name="osg_wr_addr[18..0]" direction="output" scope="external" />
+  <pin name="osg_wr_data[35..0]" direction="output" scope="external" />
+  <pin name="osg_wr_ena" direction="output" scope="external" />
+  <pin name="osg_rd_addr[18..0]" direction="output" scope="external" />
+  <pin name="osg_rd_data[35..0]" direction="input" scope="external" />
+  <pin name="baseband_i[13..0]" direction="output" scope="external" />
+  <pin name="baseband_q[13..0]" direction="output" scope="external" />
+  <pin name="baseband_valid" direction="output" scope="external" />
+ </global>
+</pinplan>

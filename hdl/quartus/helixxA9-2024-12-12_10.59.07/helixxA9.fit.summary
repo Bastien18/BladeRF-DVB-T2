@@ -1,0 +1,20 @@
+Fitter Status : Successful - Thu Dec 12 10:58:07 2024
+Quartus Prime Version : 17.1.0 Build 590 10/25/2017 SJ Standard Edition
+Revision Name : helix
+Top-level Entity Name : bladerf
+Family : Cyclone V
+Device : 5CEBA9F23C8
+Timing Models : Final
+Logic utilization (in ALMs) : 6,600 / 113,560 ( 6 % )
+Total registers : 14385
+Total pins : 173 / 224 ( 77 % )
+Total virtual pins : 0
+Total block memory bits : 1,963,520 / 12,492,800 ( 16 % )
+Total RAM Blocks : 246 / 1,220 ( 20 % )
+Total DSP Blocks : 8 / 342 ( 2 % )
+Total HSSI RX PCSs : 0
+Total HSSI PMA RX Deserializers : 0
+Total HSSI TX PCSs : 0
+Total HSSI PMA TX Serializers : 0
+Total PLLs : 3 / 8 ( 38 % )
+Total DLLs : 0 / 4 ( 0 % )

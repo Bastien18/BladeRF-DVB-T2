@@ -124,6 +124,12 @@ make_revision foxhunt
 # Create the wlan
 make_revision wlan
 
+# Create the helix
+make_revision helix
+
+# Create the dvbt2
+make_revision dvbt2
+
 
 # Projects created!
 puts "${PROJECT_NAME} projects created!"

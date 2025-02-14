@@ -1,0 +1,82 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineSystem.cmake:200 (message)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      The target system is: Generic -  - nios2
+      The host system is: Windows - 10.0.22631 - AMD64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCCompiler.cmake:123 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+      Compiler: C:/intelFPGA/17.1/nios2eds/bin/gnu/H-x86_64-mingw32/bin/nios2-elf-gcc.exe 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+      
+      The C compiler identification is GNU, found in:
+        C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-hosted/libad936x/CMakeFiles/3.31.2/CompilerIdC/a.out
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeDetermineCompilerABI.cmake:74 (try_compile)"
+      - "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeTestCCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting C compiler ABI info"
+    directories:
+      source: "C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-hosted/libad936x/CMakeFiles/CMakeScratch/TryCompile-a9ak4f"
+      binary: "C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-hosted/libad936x/CMakeFiles/CMakeScratch/TryCompile-a9ak4f"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_EXE_LINKER_FLAGS: ""
+    buildResult:
+      variable: "CMAKE_C_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: 'C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-hosted/libad936x/CMakeFiles/CMakeScratch/TryCompile-a9ak4f'
+        
+        Run Build Command(s): "C:/Program Files/CMake/bin/cmake.exe" -E env VERBOSE=1 C:/intelFPGA/17.1/nios2eds/bin/gnu/H-x86_64-mingw32/bin/make.exe -f Makefile cmTC_59d0c/fast
+        make.exe[1]: Entering directory `C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-hosted/libad936x/CMakeFiles/CMakeScratch/TryCompile-a9ak4f'
+        C:/intelFPGA/17.1/nios2eds/bin/gnu/H-x86_64-mingw32/bin/make.exe  -f CMakeFiles/cmTC_59d0c.dir/build.make CMakeFiles/cmTC_59d0c.dir/build
+        make.exe[2]: Entering directory `C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-hosted/libad936x/CMakeFiles/CMakeScratch/TryCompile-a9ak4f'
+        Building C object CMakeFiles/cmTC_59d0c.dir/CMakeCCompilerABI.c.obj
+        C:/intelFPGA/17.1/nios2eds/bin/gnu/H-x86_64-mingw32/bin/nios2-elf-gcc.exe   -v -o CMakeFiles/cmTC_59d0c.dir/CMakeCCompilerABI.c.obj -c "C:/Program Files/CMake/share/cmake-3.31/Modules/CMakeCCompilerABI.c"
+        nios2-elf-gcc.exe: error: C:/Program: No such file or directory
+        nios2-elf-gcc.exe: error: Files/CMake/share/cmake-3.31/Modules/CMakeCCompilerABI.c: No such file or directory
+        Using built-in specs.
+        COLLECT_GCC=C:\\intelFPGA\\17.1\\nios2eds\\bin\\gnu\\H-x86_64-mingw32\\bin\\nios2-elf-gcc.exe
+        Target: nios2-elf
+        Configured with: ../src/gcc-5.3/configure --host=x86_64-w64-mingw32 --build=x86_64-pc-linux-gnu --target=nios2-elf --prefix=/tmp/arc/583155366/ACDS_lwr/ip/sopc/app/gnu/BUILD/gnu --with-sysroot=/tmp/arc/583155366/ACDS_lwr/ip/sopc/app/gnu/BUILD/gnu/H-x86_64-mingw32 --exec-prefix=/tmp/arc/583155366/ACDS_lwr/ip/sopc/app/gnu/BUILD/gnu/H-x86_64-mingw32 --with-newlib --disable-nls --disable-libmudflap --disable-libssp --disable-libgomp --with-gnu-as --with-gnu-ld --enable-sjlj-exceptions --disable-__cxa_atexit --disable-initfini-array --disable-threads --disable-bootstrap --enable-multilib --with-pkgversion='Altera 17.1 Build 590' --with-gmp=/tmp/arc/583155366/ACDS_lwr/ip/sopc/app/gnu/BUILD/gnu/x86_64-w64-mingw32-hostlibs --with-mpfr=/tmp/arc/583155366/ACDS_lwr/ip/sopc/app/gnu/BUILD/gnu/x86_64-w64-mingw32-hostlibs --with-mpc=/tmp/arc/583155366/ACDS_lwr/ip/sopc/app/gnu/BUILD/gnu/x86_64-w64-mingw32-hostlibs --enable-languages=c,c++ --disable-libffi --disable-libstdcxx-pch --with-zlib=no --with-bugurl=http://www.altera.com/mysupport
+        Thread model: single
+        gcc version 5.3.0 (Altera 17.1 Build 590) 
+        Linking C executable cmTC_59d0c
+        C:/intelFPGA/17.1/nios2eds/bin/gnu/H-x86_64-mingw32/bin/nios2-elf-gcc.exe  -v "CMakeFiles/cmTC_59d0c.dir/CMakeCCompilerABI.c.obj"  -o cmTC_59d0c
+        nios2-elf-gcc.exe: error: CMakeFiles/cmTC_59d0c.dir/CMakeCCompilerABI.c.obj : No such file or directory
+        Using built-in specs.
+        COLLECT_GCC=C:\\intelFPGA\\17.1\\nios2eds\\bin\\gnu\\H-x86_64-mingw32\\bin\\nios2-elf-gcc.exe
+        COLLECT_LTO_WRAPPER=c:/intelfpga/17.1/nios2eds/bin/gnu/h-x86_64-mingw32/bin/../libexec/gcc/nios2-elf/5.3.0/lto-wrapper.exe
+        Target: nios2-elf
+        Configured with: ../src/gcc-5.3/configure --host=x86_64-w64-mingw32 --build=x86_64-pc-linux-gnu --target=nios2-elf --prefix=/tmp/arc/583155366/ACDS_lwr/ip/sopc/app/gnu/BUILD/gnu --with-sysroot=/tmp/arc/583155366/ACDS_lwr/ip/sopc/app/gnu/BUILD/gnu/H-x86_64-mingw32 --exec-prefix=/tmp/arc/583155366/ACDS_lwr/ip/sopc/app/gnu/BUILD/gnu/H-x86_64-mingw32 --with-newlib --disable-nls --disable-libmudflap --disable-libssp --disable-libgomp --with-gnu-as --with-gnu-ld --enable-sjlj-exceptions --disable-__cxa_atexit --disable-initfini-array --disable-threads --disable-bootstrap --enable-multilib --with-pkgversion='Altera 17.1 Build 590' --with-gmp=/tmp/arc/583155366/ACDS_lwr/ip/sopc/app/gnu/BUILD/gnu/x86_64-w64-mingw32-hostlibs --with-mpfr=/tmp/arc/583155366/ACDS_lwr/ip/sopc/app/gnu/BUILD/gnu/x86_64-w64-mingw32-hostlibs --with-mpc=/tmp/arc/583155366/ACDS_lwr/ip/sopc/app/gnu/BUILD/gnu/x86_64-w64-mingw32-hostlibs --enable-languages=c,c++ --disable-libffi --disable-libstdcxx-pch --with-zlib=no --with-bugurl=http://www.altera.com/mysupport
+        Thread model: single
+        gcc version 5.3.0 (Altera 17.1 Build 590) 
+        make.exe[2]: Leaving directory `C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-hosted/libad936x/CMakeFiles/CMakeScratch/TryCompile-a9ak4f'
+        make.exe[1]: Leaving directory `C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-hosted/libad936x/CMakeFiles/CMakeScratch/TryCompile-a9ak4f'
+        
+      exitCode: 0
+...

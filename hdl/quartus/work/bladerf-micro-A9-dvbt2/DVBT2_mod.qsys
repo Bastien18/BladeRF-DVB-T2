@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<system name="$${FILENAME}">
+ <component
+   name="$${FILENAME}"
+   displayName="$${FILENAME}"
+   version="1.0"
+   description=""
+   tags="INTERNAL_COMPONENT=true"
+   categories="" />
+ <parameter name="bonusData"><![CDATA[bonusData 
+{
+   element DvbT2Mod_0
+   {
+      datum _sortIndex
+      {
+         value = "0";
+         type = "int";
+      }
+   }
+}
+]]></parameter>
+ <parameter name="clockCrossingAdapter" value="HANDSHAKE" />
+ <parameter name="device" value="5CEBA9F23C8" />
+ <parameter name="deviceFamily" value="Cyclone V" />
+ <parameter name="deviceSpeedGrade" value="8" />
+ <parameter name="fabricMode" value="QSYS" />
+ <parameter name="generateLegacySim" value="false" />
+ <parameter name="generationId" value="0" />
+ <parameter name="globalResetBus" value="false" />
+ <parameter name="hdlLanguage" value="VERILOG" />
+ <parameter name="hideFromIPCatalog" value="true" />
+ <parameter name="lockedInterfaceDefinition" value="" />
+ <parameter name="maxAdditionalLatency" value="1" />
+ <parameter name="projectName" value="" />
+ <parameter name="sopcBorderPoints" value="false" />
+ <parameter name="systemHash" value="0" />
+ <parameter name="testBenchDutName" value="" />
+ <parameter name="timeStamp" value="0" />
+ <parameter name="useTestBenchNamingPattern" value="false" />
+ <instanceScript></instanceScript>
+ <interface
+   name="Baseband"
+   internal="DvbT2Mod_0.Baseband"
+   type="conduit"
+   dir="end">
+  <port name="baseband_i" internal="baseband_i" />
+  <port name="baseband_q" internal="baseband_q" />
+  <port name="baseband_valid" internal="baseband_valid" />
+ </interface>
+ <interface name="QDR" internal="DvbT2Mod_0.QDR" type="conduit" dir="end">
+  <port name="fft_wr_addr" internal="fft_wr_addr" />
+  <port name="fft_wr_data" internal="fft_wr_data" />
+  <port name="fft_wr_ena" internal="fft_wr_ena" />
+  <port name="fft_rd_addr" internal="fft_rd_addr" />
+  <port name="fft_rd_data" internal="fft_rd_data" />
+  <port name="osg_wr_addr" internal="osg_wr_addr" />
+  <port name="osg_wr_data" internal="osg_wr_data" />
+  <port name="osg_wr_ena" internal="osg_wr_ena" />
+  <port name="osg_rd_addr" internal="osg_rd_addr" />
+  <port name="osg_rd_data" internal="osg_rd_data" />
+ </interface>
+ <interface name="RAM" internal="DvbT2Mod_0.RAM" type="conduit" dir="end">
+  <port name="ram_cs" internal="ram_cs" />
+  <port name="ram_burst_access" internal="ram_burst_access" />
+  <port name="ram_burst_size" internal="ram_burst_size" />
+  <port name="ram_address" internal="ram_address" />
+  <port name="ram_wr_en" internal="ram_wr_en" />
+  <port name="ram_wrdata" internal="ram_wrdata" />
+  <port name="ram_rd_en" internal="ram_rd_en" />
+  <port name="ram_rddata" internal="ram_rddata" />
+  <port name="ram_rddata_valid" internal="ram_rddata_valid" />
+  <port name="ram_busy" internal="ram_busy" />
+  <port name="ram_available" internal="ram_available" />
+  <port name="ram_empty" internal="ram_empty" />
+ </interface>
+ <interface name="TS" internal="DvbT2Mod_0.TS" type="conduit" dir="end">
+  <port name="ts_data_valid" internal="ts_data_valid" />
+  <port name="ts_data" internal="ts_data" />
+  <port name="ts_data_refclk" internal="ts_data_refclk" />
+  <port name="ts_data_busy" internal="ts_data_busy" />
+ </interface>
+ <interface name="TS_Clk" internal="DvbT2Mod_0.TS_Clk" type="clock" dir="end">
+  <port name="ts_data_clk" internal="ts_data_clk" />
+ </interface>
+ <interface
+   name="avalon_slave"
+   internal="DvbT2Mod_0.avalon_slave"
+   type="avalon"
+   dir="end">
+  <port name="reg_address" internal="reg_address" />
+  <port name="reg_wr_data" internal="reg_wr_data" />
+  <port name="reg_wr_en" internal="reg_wr_en" />
+  <port name="reg_chip_en" internal="reg_chip_en" />
+  <port name="reg_rd_data" internal="reg_rd_data" />
+  <port name="reg_cmd_ack" internal="reg_cmd_ack" />
+ </interface>
+ <interface
+   name="cms0041_clock"
+   internal="DvbT2Mod_0.cms0041_clock"
+   type="clock"
+   dir="end">
+  <port name="clock" internal="clock" />
+ </interface>
+ <interface name="irq" internal="DvbT2Mod_0.irq" type="interrupt" dir="end">
+  <port name="reg_irq" internal="reg_irq" />
+ </interface>
+ <interface name="reset_n" internal="DvbT2Mod_0.reset_n" type="reset" dir="end">
+  <port name="reset_n" internal="reset_n" />
+ </interface>
+ <module
+   name="DvbT2Mod_0"
+   kind="DvbT2Mod"
+   version="6.8"
+   enabled="1"
+   autoexport="1">
+  <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
+  <parameter name="BUILD_CITL_CACHE" value="0" />
+  <parameter name="BUILD_CPU_BYTE_ADDR_WIDTH" value="20" />
+  <parameter name="BUILD_SDRAM_WORD_ADDR_WIDTH" value="24" />
+  <parameter name="CLOCK_FREQUENCY_KHZ" value="100000" />
+  <parameter name="GUI_BASEBAND_OUTPUT" value="true" />
+  <parameter name="GUI_BASE_TO_IF" value="true" />
+  <parameter name="GUI_CALCULATE_TS_RATE" value="true" />
+  <parameter name="GUI_CLOCK_RIF_FREQUENCY_KHZ" value="100000" />
+  <parameter name="GUI_CRITICAL_FILTER" value="Normal" />
+  <parameter name="GUI_DAC_PROGRAM" value="true" />
+  <parameter name="GUI_DAC_PROG_CLOCK_FREQUENCY_KHZ" value="100000" />
+  <parameter name="GUI_DEVICE_FAMILY" value="Generic" />
+  <parameter name="GUI_DUAL_CLOCK_DOMAIN" value="false" />
+  <parameter name="GUI_FEF_SUPPORT" value="false" />
+  <parameter name="GUI_FFT_WINDOW" value="false" />
+  <parameter name="GUI_IDV_ADDR_EXTRACTION" value="false" />
+  <parameter name="GUI_IF_ONLY" value="true" />
+  <parameter name="GUI_INBAND_EQUALISER" value="false" />
+  <parameter name="GUI_L1ACE_PROCESSOR" value="false" />
+  <parameter name="GUI_MAX_FFT_SIZE" value="8k" />
+  <parameter name="GUI_OSG_USE_INTERNAL_RAM" value="false" />
+  <parameter name="GUI_P2_BIAS_CELLS" value="false" />
+  <parameter name="GUI_PAPR" value="true" />
+  <parameter name="GUI_PCR_SUPPORT" value="true" />
+  <parameter name="GUI_PLL_PROGRAM" value="None" />
+  <parameter name="GUI_PLL_PROG_CLOCK_FREQUENCY_KHZ" value="100000" />
+  <parameter name="GUI_PRBS_PACKETS" value="true" />
+  <parameter name="GUI_PRE_DISTORT" value="true" />
+  <parameter name="GUI_RAM_TEST_SUPPORT" value="false" />
+  <parameter name="GUI_REGBANK_INITIALISATION" value="false" />
+  <parameter name="GUI_RIF" value="None" />
+  <parameter name="GUI_SEPARATE_DAC_PROG_CLOCK" value="Core Clock" />
+  <parameter name="GUI_SEPARATE_PLL_PROG_CLOCK" value="Core Clock" />
+  <parameter name="GUI_SFN_SUPPORT" value="false" />
+  <parameter name="GUI_SUPPORTED_PLP_NUM" value="1" />
+  <parameter name="GUI_T2ADAPT" value="true" />
+  <parameter name="GUI_T2MI" value="false" />
+  <parameter name="GUI_USE_CONFIG_PACK" value="false" />
+ </module>
+ <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
+ <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.insertDefaultSlave" value="FALSE" />
+ <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="1" />
+</system>

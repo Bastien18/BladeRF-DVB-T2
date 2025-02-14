@@ -1,0 +1,554 @@
+ -- Copyright (C) 2017  Intel Corporation. All rights reserved.
+ -- Your use of Intel Corporation's design tools, logic functions 
+ -- and other software and tools, and its AMPP partner logic 
+ -- functions, and any output files from any of the foregoing 
+ -- (including device programming or simulation files), and any 
+ -- associated documentation or information are expressly subject 
+ -- to the terms and conditions of the Intel Program License 
+ -- Subscription Agreement, the Intel Quartus Prime License Agreement,
+ -- the Intel FPGA IP License Agreement, or other applicable license
+ -- agreement, including, without limitation, that your use is for
+ -- the sole purpose of programming logic devices manufactured by
+ -- Intel and sold by Intel or its authorized distributors.  Please
+ -- refer to the applicable agreement for further details.
+ -- 
+ -- This is a Quartus Prime output file. It is for reporting purposes only, and is
+ -- not intended for use as a Quartus Prime input file. This file cannot be used
+ -- to make Quartus Prime pin assignments - for instructions on how to make pin
+ -- assignments, please see Quartus Prime help.
+ ---------------------------------------------------------------------------------
+
+
+
+ ---------------------------------------------------------------------------------
+ -- NC            : No Connect. This pin has no internal connection to the device.
+ -- DNU           : Do Not Use. This pin MUST NOT be connected.
+ -- VCCINT        : Dedicated power pin, which MUST be connected to VCC  (1.2V).
+ -- VCCIO         : Dedicated power pin, which MUST be connected to VCC
+ --                 of its bank.
+ --                  Bank 1:       2.5V
+ --                  Bank 2:       2.5V
+ --                  Bank 3:       1.8V
+ --                  Bank 4:       1.8V
+ --                  Bank 5:       3.3V
+ --                  Bank 6:       3.3V
+ --                  Bank 7:       2.5V
+ --                  Bank 8:       3.3V
+ -- GND           : Dedicated ground pin. Dedicated GND pins MUST be connected to GND.
+ --                  It can also be used to report unused dedicated pins. The connection
+ --                  on the board for unused dedicated pins depends on whether this will
+ --                  be used in a future design. One example is device migration. When
+ --                  using device migration, refer to the device pin-tables. If it is a
+ --                  GND pin in the pin table or if it will not be used in a future design
+ --                  for another purpose the it MUST be connected to GND. If it is an unused
+ --                  dedicated pin, then it can be connected to a valid signal on the board
+ --                  (low, high, or toggling) if that signal is required for a different
+ --                  revision of the design.
+ -- GND+          : Unused input pin. It can also be used to report unused dual-purpose pins.
+ --                  This pin should be connected to GND. It may also be connected  to a
+ --                  valid signal  on the board  (low, high, or toggling)  if that signal
+ --                  is required for a different revision of the design.
+ -- GND*          : Unused  I/O  pin. Connect each pin marked GND* directly to GND
+ --                  or leave it unconnected.
+ -- RESERVED      : Unused I/O pin, which MUST be left unconnected.
+ -- RESERVED_INPUT    : Pin is tri-stated and should be connected to the board.
+ -- RESERVED_INPUT_WITH_WEAK_PULLUP    : Pin is tri-stated with internal weak pull-up resistor.
+ -- RESERVED_INPUT_WITH_BUS_HOLD       : Pin is tri-stated with bus-hold circuitry.
+ -- RESERVED_OUTPUT_DRIVEN_HIGH        : Pin is output driven high.
+ ---------------------------------------------------------------------------------
+
+
+
+ ---------------------------------------------------------------------------------
+ -- Pin directions (input, output or bidir) are based on device operating in user mode.
+ ---------------------------------------------------------------------------------
+
+Quartus Prime Version 17.1.0 Build 590 10/25/2017 SJ Standard Edition
+CHIP  "helix"  ASSIGNED TO AN: 10CL120YF484C8G
+
+Pin Name/Usage               : Location  : Dir.   : I/O Standard      : Voltage : I/O Bank  : User Assignment
+-------------------------------------------------------------------------------------------------------------
+GND                          : A1        : gnd    :                   :         :           :                
+VCCIO8                       : A2        : power  :                   : 3.3V    : 8         :                
+exp_gpio[26]                 : A3        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[21]                 : A4        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[4]                  : A5        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[18]                 : A6        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[1]                  : A7        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[10]                 : A8        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[15]                 : A9        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[23]                 : A10       : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+GND+                         : A11       :        :                   :         : 8         :                
+c5_clock2                    : A12       : input  : 3.3-V LVCMOS      :         : 7         : N              
+adi_ctrl_out[7]              : A13       : input  : 2.5 V             :         : 7         : N              
+adi_spi_sdo                  : A14       : input  : 2.5 V             :         : 7         : N              
+adi_tx_spdt2_v[2]            : A15       : output : 2.5 V             :         : 7         : N              
+adi_tx_spdt1_v[2]            : A16       : output : 2.5 V             :         : 7         : N              
+adi_ctrl_in[0]               : A17       : output : 2.5 V             :         : 7         : N              
+adi_ctrl_out[4]              : A18       : input  : 2.5 V             :         : 7         : N              
+adf_muxout                   : A19       : input  : 3.3-V LVCMOS      :         : 7         : N              
+adi_ctrl_in[2]               : A20       : output : 2.5 V             :         : 7         : N              
+VCCIO7                       : A21       : power  :                   : 2.5V    : 7         :                
+GND                          : A22       : gnd    :                   :         :           :                
+GND                          : AA1       : gnd    :                   :         :           :                
+GND                          : AA2       : gnd    :                   :         :           :                
+fx3_ctl[1]                   : AA3       : bidir  : 1.8 V             :         : 3         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AA4       :        :                   :         : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : AA5       :        :                   :         : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : AA6       :        :                   :         : 3         :                
+pwr_status                   : AA7       : input  : 1.8 V             :         : 3         : N              
+fx3_gpif[17]                 : AA8       : bidir  : 1.8 V             :         : 3         : N              
+fx3_gpif[31]                 : AA9       : bidir  : 1.8 V             :         : 3         : N              
+fx3_gpif[25]                 : AA10      : bidir  : 1.8 V             :         : 3         : N              
+GND+                         : AA11      :        :                   :         : 3         :                
+GND+                         : AA12      :        :                   :         : 4         :                
+fx3_ctl[0]                   : AA13      : bidir  : 1.8 V             :         : 4         : N              
+fx3_ctl[5]                   : AA14      : bidir  : 1.8 V             :         : 4         : N              
+fx3_ctl[12]                  : AA15      : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[13]                 : AA16      : bidir  : 1.8 V             :         : 4         : N              
+GND                          : AA17      : gnd    :                   :         :           :                
+fx3_gpif[16]                 : AA18      : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[9]                  : AA19      : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[20]                 : AA20      : bidir  : 1.8 V             :         : 4         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : AA21      :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : AA22      :        :                   :         : 5         :                
+GND                          : AB1       : gnd    :                   :         :           :                
+VCCIO3                       : AB2       : power  :                   : 1.8V    : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : AB3       :        :                   :         : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : AB4       :        :                   :         : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : AB5       :        :                   :         : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : AB6       :        :                   :         : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : AB7       :        :                   :         : 3         :                
+fx3_gpif[21]                 : AB8       : bidir  : 1.8 V             :         : 3         : N              
+fx3_gpif[27]                 : AB9       : bidir  : 1.8 V             :         : 3         : N              
+fx3_gpif[24]                 : AB10      : bidir  : 1.8 V             :         : 3         : N              
+GND+                         : AB11      :        :                   :         : 3         :                
+fx3_pclk                     : AB12      : input  : 1.8 V             :         : 4         : N              
+fx3_gpif[22]                 : AB13      : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[6]                  : AB14      : bidir  : 1.8 V             :         : 4         : N              
+fx3_ctl[8]                   : AB15      : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[0]                  : AB16      : bidir  : 1.8 V             :         : 4         : N              
+GND                          : AB17      : gnd    :                   :         :           :                
+fx3_gpif[11]                 : AB18      : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[10]                 : AB19      : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[4]                  : AB20      : bidir  : 1.8 V             :         : 4         : N              
+VCCIO4                       : AB21      : power  :                   : 1.8V    : 4         :                
+GND                          : AB22      : gnd    :                   :         :           :                
+adi_tx_data[0](n)            : B1        : output : LVDS              :         : 1         : N              
+adi_tx_data[0]               : B2        : output : LVDS              :         : 1         : N              
+fx3_uart_rxd                 : B3        : output : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[29]                 : B4        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[7]                  : B5        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[25]                 : B6        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[27]                 : B7        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[0]                  : B8        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[31]                 : B9        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[5]                  : B10       : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+GND+                         : B11       :        :                   :         : 8         :                
+GND+                         : B12       :        :                   :         : 7         :                
+adi_spi_csn                  : B13       : output : 2.5 V             :         : 7         : N              
+adi_tx_spdt1_v[1]            : B14       : output : 2.5 V             :         : 7         : N              
+adi_en_agc                   : B15       : output : 2.5 V             :         : 7         : N              
+adi_rx_spdt1_v[1]            : B16       : output : 2.5 V             :         : 7         : N              
+adi_ctrl_in[1]               : B17       : output : 2.5 V             :         : 7         : N              
+adi_rx_spdt2_v[2]            : B18       : output : 2.5 V             :         : 7         : N              
+adi_ctrl_out[5]              : B19       : input  : 2.5 V             :         : 7         : N              
+adi_txnrx                    : B20       : output : 2.5 V             :         : 7         : N              
+dac_csn                      : B21       : output : 3.3-V LVCMOS      :         : 6         : N              
+exp_gpio[12]                 : B22       : bidir  : 3.3-V LVCMOS      :         : 6         : N              
+GND                          : C1        : gnd    :                   :         :           :                
+GND                          : C2        : gnd    :                   :         :           :                
+exp_gpio[20]                 : C3        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[13]                 : C4        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+GND                          : C5        : gnd    :                   :         :           :                
+exp_gpio[11]                 : C6        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[9]                  : C7        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[22]                 : C8        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+GND                          : C9        : gnd    :                   :         :           :                
+exp_gpio[2]                  : C10       : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+GND                          : C11       : gnd    :                   :         :           :                
+GND                          : C12       : gnd    :                   :         :           :                
+adi_reset_n                  : C13       : output : 2.5 V             :         : 7         : N              
+GND                          : C14       : gnd    :                   :         :           :                
+adi_enable                   : C15       : output : 2.5 V             :         : 7         : N              
+GND                          : C16       : gnd    :                   :         :           :                
+adi_ctrl_in[3]               : C17       : output : 2.5 V             :         : 7         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : C18       :        :                   :         : 7         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : C19       :        :                   :         : 7         :                
+exp_gpio[24]                 : C20       : bidir  : 3.3-V LVCMOS      :         : 6         : N              
+adf_ce                       : C21       : output : 3.3-V LVCMOS      :         : 6         : N              
+mini_exp1                    : C22       : bidir  : 3.3-V LVCMOS      :         : 6         : N              
+~ALTERA_ASDO_DATA1~ / RESERVED_INPUT_WITH_WEAK_PULLUP : D1        : input  : 2.5 V             :         : 1         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : D2        :        :                   :         : 1         :                
+GND                          : D3        : gnd    :                   :         :           :                
+VCCIO1                       : D4        : power  :                   : 2.5V    : 1         :                
+VCCIO8                       : D5        : power  :                   : 3.3V    : 8         :                
+exp_gpio[19]                 : D6        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[14]                 : D7        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[17]                 : D8        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+VCCIO8                       : D9        : power  :                   : 3.3V    : 8         :                
+exp_gpio[8]                  : D10       : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+VCCIO8                       : D11       : power  :                   : 3.3V    : 8         :                
+VCCIO7                       : D12       : power  :                   : 2.5V    : 7         :                
+adi_ctrl_out[2]              : D13       : input  : 2.5 V             :         : 7         : N              
+VCCIO7                       : D14       : power  :                   : 2.5V    : 7         :                
+adi_rx_spdt1_v[2]            : D15       : output : 2.5 V             :         : 7         : N              
+VCCIO7                       : D16       : power  :                   : 2.5V    : 7         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : D17       :        :                   :         : 7         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : D18       :        :                   :         : 7         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : D19       :        :                   :         : 7         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : D20       :        :                   :         : 6         :                
+dac_sdi                      : D21       : output : 3.3-V LVCMOS      :         : 6         : N              
+ufl_clock_oe                 : D22       : output : 3.3-V LVCMOS      :         : 6         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : E1        :        :                   :         : 1         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : E2        :        :                   :         : 1         :                
+adi_tx_data[1](n)            : E3        : output : LVDS              :         : 1         : N              
+adi_tx_data[1]               : E4        : output : LVDS              :         : 1         : N              
+led[1]                       : E5        : output : 3.3-V LVCMOS      :         : 8         : N              
+c5_clock2_oe                 : E6        : output : 3.3-V LVCMOS      :         : 8         : N              
+pwr_sda                      : E7        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[30]                 : E8        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[28]                 : E9        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+GND                          : E10       : gnd    :                   :         :           :                
+adi_spi_sdi                  : E11       : output : 2.5 V             :         : 7         : N              
+fx3_uart_txd                 : E12       : input  : 3.3-V LVCMOS      :         : 7         : N              
+adi_ctrl_out[1]              : E13       : input  : 2.5 V             :         : 7         : N              
+adi_tx_spdt2_v[1]            : E14       : output : 2.5 V             :         : 7         : N              
+adi_ctrl_out[6]              : E15       : input  : 2.5 V             :         : 7         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : E16       :        :                   :         : 7         :                
+VCCD_PLL2                    : E17       : power  :                   : 1.2V    :           :                
+GNDA2                        : E18       : gnd    :                   :         :           :                
+VCCIO6                       : E19       : power  :                   : 3.3V    : 6         :                
+GND                          : E20       : gnd    :                   :         :           :                
+dac_sclk                     : E21       : output : 3.3-V LVCMOS      :         : 6         : N              
+adf_sdi                      : E22       : output : 3.3-V LVCMOS      :         : 6         : N              
+adi_tx_data[3](n)            : F1        : output : LVDS              :         : 1         : N              
+adi_tx_data[3]               : F2        : output : LVDS              :         : 1         : N              
+GND                          : F3        : gnd    :                   :         :           :                
+VCCIO1                       : F4        : power  :                   : 2.5V    : 1         :                
+GNDA3                        : F5        : gnd    :                   :         :           :                
+VCCD_PLL3                    : F6        : power  :                   : 1.2V    :           :                
+pwr_scl                      : F7        : output : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[3]                  : F8        : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+tx_bias_en                   : F9        : output : 3.3-V LVCMOS      :         : 8         : N              
+exp_gpio[6]                  : F10       : bidir  : 3.3-V LVCMOS      :         : 8         : N              
+adi_spi_sclk                 : F11       : output : 2.5 V             :         : 7         : N              
+GND                          : F12       : gnd    :                   :         :           :                
+adi_rx_spdt2_v[1]            : F13       : output : 2.5 V             :         : 7         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : F14       :        :                   :         : 7         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : F15       :        :                   :         : 7         :                
+GND                          : F16       : gnd    :                   :         :           :                
+adf_csn                      : F17       : output : 3.3-V LVCMOS      :         : 6         : N              
+VCCA2                        : F18       : power  :                   : 2.5V    :           :                
+exp_gpio[16]                 : F19       : bidir  : 3.3-V LVCMOS      :         : 6         : N              
+rx_bias_en                   : F20       : output : 3.3-V LVCMOS      :         : 6         : N              
+led[3]                       : F21       : output : 3.3-V LVCMOS      :         : 6         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : F22       :        :                   :         : 6         :                
+adi_rx_clock(n)              : G1        : input  : LVDS              :         : 1         : N              
+adi_rx_clock                 : G2        : input  : LVDS              :         : 1         : N              
+adi_tx_clock(n)              : G3        : output : LVDS              :         : 1         : N              
+VCCINT                       : G4        : power  :                   : 1.2V    :           :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : G5        :        :                   :         : 1         :                
+VCCA3                        : G6        : power  :                   : 2.5V    :           :                
+GND                          : G7        : gnd    :                   :         :           :                
+VCCINT                       : G8        : power  :                   : 1.2V    :           :                
+GND                          : G9        : gnd    :                   :         :           :                
+VCCINT                       : G10       : power  :                   : 1.2V    :           :                
+GND                          : G11       : gnd    :                   :         :           :                
+VCCINT                       : G12       : power  :                   : 1.2V    :           :                
+GND                          : G13       : gnd    :                   :         :           :                
+VCCINT                       : G14       : power  :                   : 1.2V    :           :                
+GND                          : G15       : gnd    :                   :         :           :                
+VCCINT                       : G16       : power  :                   : 1.2V    :           :                
+GND                          : G17       : gnd    :                   :         :           :                
+si_clock_sel                 : G18       : output : 3.3-V LVCMOS      :         : 6         : N              
+VCCIO6                       : G19       : power  :                   : 3.3V    : 6         :                
+GND                          : G20       : gnd    :                   :         :           :                
+adi_ctrl_out[3]              : G21       : input  : 2.5 V             :         : 6         : N              
+adi_ctrl_out[0]              : G22       : input  : 2.5 V             :         : 6         : N              
+adi_tx_data[4](n)            : H1        : output : LVDS              :         : 1         : N              
+adi_tx_data[4]               : H2        : output : LVDS              :         : 1         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : H3        :        :                   :         : 1         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : H4        :        :                   :         : 1         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : H5        :        :                   :         : 1         :                
+adi_tx_data[2]               : H6        : output : LVDS              :         : 1         : N              
+adi_tx_clock                 : H7        : output : LVDS              :         : 1         : N              
+GND                          : H8        : gnd    :                   :         :           :                
+VCCINT                       : H9        : power  :                   : 1.2V    :           :                
+GND                          : H10       : gnd    :                   :         :           :                
+VCCINT                       : H11       : power  :                   : 1.2V    :           :                
+GND                          : H12       : gnd    :                   :         :           :                
+GND                          : H13       : gnd    :                   :         :           :                
+GND                          : H14       : gnd    :                   :         :           :                
+VCCINT                       : H15       : power  :                   : 1.2V    :           :                
+GND                          : H16       : gnd    :                   :         :           :                
+VCCINT                       : H17       : power  :                   : 1.2V    :           :                
+adf_sclk                     : H18       : output : 3.3-V LVCMOS      :         : 6         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : H19       :        :                   :         : 6         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : H20       :        :                   :         : 6         :                
+exp_clock_oe                 : H21       : output : 3.3-V LVCMOS      :         : 6         : N              
+exp_clock_req                : H22       : input  : 3.3-V LVCMOS      :         : 6         : N              
+adi_tx_data[5](n)            : J1        : output : LVDS              :         : 1         : N              
+adi_tx_data[5]               : J2        : output : LVDS              :         : 1         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : J3        :        :                   :         : 1         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : J4        :        :                   :         : 1         :                
+GND                          : J5        : gnd    :                   :         :           :                
+adi_tx_data[2](n)            : J6        : output : LVDS              :         : 1         : N              
+VCCINT                       : J7        : power  :                   : 1.2V    :           :                
+VCCINT                       : J8        : power  :                   : 1.2V    :           :                
+GND                          : J9        : gnd    :                   :         :           :                
+VCCINT                       : J10       : power  :                   : 1.2V    :           :                
+VCCINT                       : J11       : power  :                   : 1.2V    :           :                
+VCCINT                       : J12       : power  :                   : 1.2V    :           :                
+VCCINT                       : J13       : power  :                   : 1.2V    :           :                
+VCCINT                       : J14       : power  :                   : 1.2V    :           :                
+GND                          : J15       : gnd    :                   :         :           :                
+VCCINT                       : J16       : power  :                   : 1.2V    :           :                
+VCCINT                       : J17       : power  :                   : 1.2V    :           :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : J18       :        :                   :         : 6         :                
+GND                          : J19       : gnd    :                   :         :           :                
+led[2]                       : J20       : output : 3.3-V LVCMOS      :         : 6         : N              
+exp_present                  : J21       : input  : 3.3-V LVCMOS      :         : 6         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : J22       :        :                   :         : 6         :                
+~ALTERA_DATA0~ / RESERVED_INPUT_WITH_WEAK_PULLUP : K1        : input  : 2.5 V             :         : 1         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : K2        :        :                   :         : 1         :                
+GND                          : K3        : gnd    :                   :         :           :                
+VCCIO1                       : K4        : power  :                   : 2.5V    : 1         :                
+nCONFIG                      : K5        :        :                   :         : 1         :                
+nSTATUS                      : K6        :        :                   :         : 1         :                
+GND                          : K7        : gnd    :                   :         :           :                
+VCCINT                       : K8        : power  :                   : 1.2V    :           :                
+VCCINT                       : K9        : power  :                   : 1.2V    :           :                
+GND                          : K10       : gnd    :                   :         :           :                
+GND                          : K11       : gnd    :                   :         :           :                
+GND                          : K12       : gnd    :                   :         :           :                
+GND                          : K13       : gnd    :                   :         :           :                
+VCCINT                       : K14       : power  :                   : 1.2V    :           :                
+VCCINT                       : K15       : power  :                   : 1.2V    :           :                
+GND                          : K16       : gnd    :                   :         :           :                
+VCCINT                       : K17       : power  :                   : 1.2V    :           :                
+hw_rev[0]                    : K18       : input  : 3.3-V LVCMOS      :         : 6         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : K19       :        :                   :         : 6         :                
+MSEL3                        : K20       :        :                   :         : 6         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : K21       :        :                   :         : 6         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : K22       :        :                   :         : 6         :                
+altera_reserved_tms          : L1        : input  : 2.5 V             :         : 1         : N              
+altera_reserved_tck          : L2        : input  : 2.5 V             :         : 1         : N              
+nCE                          : L3        :        :                   :         : 1         :                
+altera_reserved_tdo          : L4        : output : 2.5 V             :         : 1         : N              
+altera_reserved_tdi          : L5        : input  : 2.5 V             :         : 1         : N              
+adi_tx_frame                 : L6        : output : LVDS              :         : 2         : N              
+VCCINT                       : L7        : power  :                   : 1.2V    :           :                
+GND                          : L8        : gnd    :                   :         :           :                
+VCCINT                       : L9        : power  :                   : 1.2V    :           :                
+GND                          : L10       : gnd    :                   :         :           :                
+GND                          : L11       : gnd    :                   :         :           :                
+GND                          : L12       : gnd    :                   :         :           :                
+GND                          : L13       : gnd    :                   :         :           :                
+VCCINT                       : L14       : power  :                   : 1.2V    :           :                
+GND                          : L15       : gnd    :                   :         :           :                
+VCCINT                       : L16       : power  :                   : 1.2V    :           :                
+MSEL2                        : L17       :        :                   :         : 6         :                
+MSEL1                        : L18       :        :                   :         : 6         :                
+VCCIO6                       : L19       : power  :                   : 3.3V    : 6         :                
+GND                          : L20       : gnd    :                   :         :           :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : L21       :        :                   :         : 6         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : L22       :        :                   :         : 6         :                
+adi_rx_data[0](n)            : M1        : input  : LVDS              :         : 2         : N              
+adi_rx_data[0]               : M2        : input  : LVDS              :         : 2         : N              
+adi_rx_frame(n)              : M3        : input  : LVDS              :         : 2         : N              
+adi_rx_frame                 : M4        : input  : LVDS              :         : 2         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : M5        :        :                   :         : 2         :                
+adi_tx_frame(n)              : M6        : output : LVDS              :         : 2         : N              
+GND                          : M7        : gnd    :                   :         :           :                
+VCCINT                       : M8        : power  :                   : 1.2V    :           :                
+VCCINT                       : M9        : power  :                   : 1.2V    :           :                
+GND                          : M10       : gnd    :                   :         :           :                
+GND                          : M11       : gnd    :                   :         :           :                
+GND                          : M12       : gnd    :                   :         :           :                
+GND                          : M13       : gnd    :                   :         :           :                
+VCCINT                       : M14       : power  :                   : 1.2V    :           :                
+VCCINT                       : M15       : power  :                   : 1.2V    :           :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : M16       :        :                   :         : 5         :                
+MSEL0                        : M17       :        :                   :         : 6         :                
+CONF_DONE                    : M18       :        :                   :         : 6         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : M19       :        :                   :         : 5         :                
+fx3_uart_cts                 : M20       : output : 3.3-V LVCMOS      :         : 5         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : M21       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : M22       :        :                   :         : 5         :                
+adi_rx_data[5](n)            : N1        : input  : LVDS              :         : 2         : N              
+adi_rx_data[5]               : N2        : input  : LVDS              :         : 2         : N              
+GND                          : N3        : gnd    :                   :         :           :                
+VCCIO2                       : N4        : power  :                   : 2.5V    : 2         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : N5        :        :                   :         : 2         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : N6        :        :                   :         : 2         :                
+VCCINT                       : N7        : power  :                   : 1.2V    :           :                
+GND                          : N8        : gnd    :                   :         :           :                
+VCCINT                       : N9        : power  :                   : 1.2V    :           :                
+GND                          : N10       : gnd    :                   :         :           :                
+GND                          : N11       : gnd    :                   :         :           :                
+GND                          : N12       : gnd    :                   :         :           :                
+GND                          : N13       : gnd    :                   :         :           :                
+VCCINT                       : N14       : power  :                   : 1.2V    :           :                
+GND                          : N15       : gnd    :                   :         :           :                
+VCCINT                       : N16       : power  :                   : 1.2V    :           :                
+GND                          : N17       : gnd    :                   :         :           :                
+mini_exp2                    : N18       : bidir  : 3.3-V LVCMOS      :         : 5         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : N19       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : N20       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : N21       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : N22       :        :                   :         : 5         :                
+adi_rx_data[4](n)            : P1        : input  : LVDS              :         : 2         : N              
+adi_rx_data[4]               : P2        : input  : LVDS              :         : 2         : N              
+adi_rx_data[2](n)            : P3        : input  : LVDS              :         : 2         : N              
+adi_rx_data[2]               : P4        : input  : LVDS              :         : 2         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : P5        :        :                   :         : 2         :                
+GND                          : P6        : gnd    :                   :         :           :                
+VCCINT                       : P7        : power  :                   : 1.2V    :           :                
+GND                          : P8        : gnd    :                   :         :           :                
+VCCINT                       : P9        : power  :                   : 1.2V    :           :                
+VCCINT                       : P10       : power  :                   : 1.2V    :           :                
+VCCINT                       : P11       : power  :                   : 1.2V    :           :                
+VCCINT                       : P12       : power  :                   : 1.2V    :           :                
+VCCINT                       : P13       : power  :                   : 1.2V    :           :                
+VCCINT                       : P14       : power  :                   : 1.2V    :           :                
+VCCINT                       : P15       : power  :                   : 1.2V    :           :                
+GND                          : P16       : gnd    :                   :         :           :                
+VCCINT                       : P17       : power  :                   : 1.2V    :           :                
+VCCIO5                       : P18       : power  :                   : 3.3V    : 5         :                
+GND                          : P19       : gnd    :                   :         :           :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : P20       :        :                   :         : 5         :                
+exp_i2c_scl                  : P21       : bidir  : 3.3-V LVCMOS      :         : 5         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : P22       :        :                   :         : 5         :                
+adi_rx_data[3](n)            : R1        : input  : LVDS              :         : 2         : N              
+adi_rx_data[3]               : R2        : input  : LVDS              :         : 2         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : R3        :        :                   :         : 2         :                
+adi_sync_in                  : R4        : output : 2.5 V             :         : 2         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : R5        :        :                   :         : 2         :                
+VCCINT                       : R6        : power  :                   : 1.2V    :           :                
+GND                          : R7        : gnd    :                   :         :           :                
+VCCINT                       : R8        : power  :                   : 1.2V    :           :                
+GND                          : R9        : gnd    :                   :         :           :                
+VCCINT                       : R10       : power  :                   : 1.2V    :           :                
+GND                          : R11       : gnd    :                   :         :           :                
+VCCINT                       : R12       : power  :                   : 1.2V    :           :                
+GND                          : R13       : gnd    :                   :         :           :                
+VCCINT                       : R14       : power  :                   : 1.2V    :           :                
+VCCINT                       : R15       : power  :                   : 1.2V    :           :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : R16       :        :                   :         : 4         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : R17       :        :                   :         : 5         :                
+GND                          : R18       : gnd    :                   :         :           :                
+exp_i2c_sda                  : R19       : bidir  : 3.3-V LVCMOS      :         : 5         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : R20       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : R21       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : R22       :        :                   :         : 5         :                
+GND+                         : T1        :        :                   :         : 2         :                
+GND+                         : T2        :        :                   :         : 2         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : T3        :        :                   :         : 2         :                
+hw_rev[1]                    : T4        : input  : 3.3-V LVCMOS      :         : 2         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : T5        :        :                   :         : 2         :                
+VCCA1                        : T6        : power  :                   : 2.5V    :           :                
+VCCINT                       : T7        : power  :                   : 1.2V    :           :                
+GND                          : T8        : gnd    :                   :         :           :                
+VCCINT                       : T9        : power  :                   : 1.2V    :           :                
+GND                          : T10       : gnd    :                   :         :           :                
+VCCINT                       : T11       : power  :                   : 1.2V    :           :                
+GND                          : T12       : gnd    :                   :         :           :                
+VCCINT                       : T13       : power  :                   : 1.2V    :           :                
+GND                          : T14       : gnd    :                   :         :           :                
+fx3_gpif[5]                  : T15       : bidir  : 1.8 V             :         : 4         : N              
+fx3_ctl[9]                   : T16       : bidir  : 1.8 V             :         : 4         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : T17       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : T18       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : T19       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : T20       :        :                   :         : 5         :                
+GND+                         : T21       :        :                   :         : 5         :                
+GND+                         : T22       :        :                   :         : 5         :                
+adi_rx_data[1](n)            : U1        : input  : LVDS              :         : 2         : N              
+adi_rx_data[1]               : U2        : input  : LVDS              :         : 2         : N              
+GND                          : U3        : gnd    :                   :         :           :                
+VCCIO2                       : U4        : power  :                   : 2.5V    : 2         :                
+GNDA1                        : U5        : gnd    :                   :         :           :                
+VCCD_PLL1                    : U6        : power  :                   : 1.2V    :           :                
+GND                          : U7        : gnd    :                   :         :           :                
+VCCINT                       : U8        : power  :                   : 1.2V    :           :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : U9        :        :                   :         : 3         :                
+fx3_ctl[3]                   : U10       : bidir  : 1.8 V             :         : 3         : N              
+fx3_gpif[18]                 : U11       : bidir  : 1.8 V             :         : 3         : N              
+fx3_ctl[4]                   : U12       : bidir  : 1.8 V             :         : 4         : N              
+GND                          : U13       : gnd    :                   :         :           :                
+fx3_gpif[1]                  : U14       : bidir  : 1.8 V             :         : 4         : N              
+VCCINT                       : U15       : power  :                   : 1.2V    :           :                
+VCCINT                       : U16       : power  :                   : 1.2V    :           :                
+VCCINT                       : U17       : power  :                   : 1.2V    :           :                
+VCCA4                        : U18       : power  :                   : 2.5V    :           :                
+GND                          : U19       : gnd    :                   :         :           :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : U20       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : U21       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : U22       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : V1        :        :                   :         : 2         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : V2        :        :                   :         : 2         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : V3        :        :                   :         : 2         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : V4        :        :                   :         : 2         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : V5        :        :                   :         : 3         :                
+GND                          : V6        : gnd    :                   :         :           :                
+VCCINT                       : V7        : power  :                   : 1.2V    :           :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : V8        :        :                   :         : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : V9        :        :                   :         : 3         :                
+fx3_gpif[15]                 : V10       : bidir  : 1.8 V             :         : 3         : N              
+fx3_gpif[19]                 : V11       : bidir  : 1.8 V             :         : 3         : N              
+fx3_ctl[11]                  : V12       : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[3]                  : V13       : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[28]                 : V14       : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[30]                 : V15       : bidir  : 1.8 V             :         : 4         : N              
+fx3_ctl[6]                   : V16       : bidir  : 1.8 V             :         : 4         : N              
+VCCD_PLL4                    : V17       : power  :                   : 1.2V    :           :                
+GNDA4                        : V18       : gnd    :                   :         :           :                
+VCCIO5                       : V19       : power  :                   : 3.3V    : 5         :                
+GND                          : V20       : gnd    :                   :         :           :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : V21       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : V22       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : W1        :        :                   :         : 2         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : W2        :        :                   :         : 2         :                
+GND                          : W3        : gnd    :                   :         :           :                
+VCCIO2                       : W4        : power  :                   : 2.5V    : 2         :                
+VCCIO3                       : W5        : power  :                   : 1.8V    : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : W6        :        :                   :         : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : W7        :        :                   :         : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : W8        :        :                   :         : 3         :                
+VCCIO3                       : W9        : power  :                   : 1.8V    : 3         :                
+fx3_gpif[29]                 : W10       : bidir  : 1.8 V             :         : 3         : N              
+VCCIO3                       : W11       : power  :                   : 1.8V    : 3         :                
+VCCIO4                       : W12       : power  :                   : 1.8V    : 4         :                
+fx3_ctl[10]                  : W13       : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[7]                  : W14       : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[2]                  : W15       : bidir  : 1.8 V             :         : 4         : N              
+VCCIO4                       : W16       : power  :                   : 1.8V    : 4         :                
+fx3_gpif[26]                 : W17       : bidir  : 1.8 V             :         : 4         : N              
+VCCIO4                       : W18       : power  :                   : 1.8V    : 4         :                
+ps_sync_1p1                  : W19       : output : 3.3-V LVCMOS      :         : 5         : N              
+RESERVED_INPUT_WITH_WEAK_PULLUP : W20       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : W21       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : W22       :        :                   :         : 5         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : Y1        :        :                   :         : 2         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : Y2        :        :                   :         : 2         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : Y3        :        :                   :         : 3         :                
+fx3_ctl[2]                   : Y4        : bidir  : 1.8 V             :         : 3         : N              
+GND                          : Y5        : gnd    :                   :         :           :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : Y6        :        :                   :         : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : Y7        :        :                   :         : 3         :                
+RESERVED_INPUT_WITH_WEAK_PULLUP : Y8        :        :                   :         : 3         :                
+GND                          : Y9        : gnd    :                   :         :           :                
+fx3_gpif[23]                 : Y10       : bidir  : 1.8 V             :         : 3         : N              
+GND                          : Y11       : gnd    :                   :         :           :                
+GND                          : Y12       : gnd    :                   :         :           :                
+fx3_ctl[7]                   : Y13       : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[14]                 : Y14       : bidir  : 1.8 V             :         : 4         : N              
+fx3_gpif[12]                 : Y15       : bidir  : 1.8 V             :         : 4         : N              
+GND                          : Y16       : gnd    :                   :         :           :                
+fx3_gpif[8]                  : Y17       : bidir  : 1.8 V             :         : 4         : N              
+GND                          : Y18       : gnd    :                   :         :           :                
+VCCIO5                       : Y19       : power  :                   : 3.3V    : 5         :                
+GND                          : Y20       : gnd    :                   :         :           :                
+GND                          : Y21       : gnd    :                   :         :           :                
+ps_sync_1p8                  : Y22       : output : 3.3-V LVCMOS      :         : 5         : N              

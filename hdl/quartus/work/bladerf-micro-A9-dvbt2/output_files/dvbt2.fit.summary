@@ -1,0 +1,20 @@
+Fitter Status : Successful - Tue Feb 11 16:28:52 2025
+Quartus Prime Version : 17.1.0 Build 590 10/25/2017 SJ Standard Edition
+Revision Name : dvbt2
+Top-level Entity Name : bladerf
+Family : Cyclone V
+Device : 5CEBA9F23C8
+Timing Models : Final
+Logic utilization (in ALMs) : 9,157 / 113,560 ( 8 % )
+Total registers : 15504
+Total pins : 173 / 224 ( 77 % )
+Total virtual pins : 0
+Total block memory bits : 2,001,920 / 12,492,800 ( 16 % )
+Total RAM Blocks : 250 / 1,220 ( 20 % )
+Total DSP Blocks : 8 / 342 ( 2 % )
+Total HSSI RX PCSs : 0
+Total HSSI PMA RX Deserializers : 0
+Total HSSI TX PCSs : 0
+Total HSSI PMA TX Serializers : 0
+Total PLLs : 3 / 8 ( 38 % )
+Total DLLs : 0 / 4 ( 0 % )
