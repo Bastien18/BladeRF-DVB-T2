@@ -1,0 +1,42 @@
+	DVBT2_mod u0 (
+		.clock            (<connected-to-clock>),            // cms0041_clock.clk
+		.reset_n          (<connected-to-reset_n>),          //       reset_n.reset_n
+		.reg_address      (<connected-to-reg_address>),      //  avalon_slave.address
+		.reg_wr_data      (<connected-to-reg_wr_data>),      //              .writedata
+		.reg_wr_en        (<connected-to-reg_wr_en>),        //              .write
+		.reg_chip_en      (<connected-to-reg_chip_en>),      //              .chipselect
+		.reg_rd_data      (<connected-to-reg_rd_data>),      //              .readdata
+		.reg_cmd_ack      (<connected-to-reg_cmd_ack>),      //              .waitrequest_n
+		.reg_irq          (<connected-to-reg_irq>),          //           irq.irq
+		.ts_data_clk      (<connected-to-ts_data_clk>),      //        TS_Clk.clk
+		.ts_data_valid    (<connected-to-ts_data_valid>),    //            TS.data_valid
+		.ts_data          (<connected-to-ts_data>),          //              .data
+		.ts_data_refclk   (<connected-to-ts_data_refclk>),   //              .data_refclk
+		.ts_data_busy     (<connected-to-ts_data_busy>),     //              .data_busy
+		.ram_cs           (<connected-to-ram_cs>),           //           RAM.cs
+		.ram_burst_access (<connected-to-ram_burst_access>), //              .burst_access
+		.ram_burst_size   (<connected-to-ram_burst_size>),   //              .burst_size
+		.ram_address      (<connected-to-ram_address>),      //              .address
+		.ram_wr_en        (<connected-to-ram_wr_en>),        //              .wr_en
+		.ram_wrdata       (<connected-to-ram_wrdata>),       //              .wrdata
+		.ram_rd_en        (<connected-to-ram_rd_en>),        //              .rd_en
+		.ram_rddata       (<connected-to-ram_rddata>),       //              .rddata
+		.ram_rddata_valid (<connected-to-ram_rddata_valid>), //              .rddata_valid
+		.ram_busy         (<connected-to-ram_busy>),         //              .busy
+		.ram_available    (<connected-to-ram_available>),    //              .available
+		.ram_empty        (<connected-to-ram_empty>),        //              .empty
+		.fft_wr_addr      (<connected-to-fft_wr_addr>),      //           QDR.fft_wr_addr
+		.fft_wr_data      (<connected-to-fft_wr_data>),      //              .fft_wr_data
+		.fft_wr_ena       (<connected-to-fft_wr_ena>),       //              .fft_wr_ena
+		.fft_rd_addr      (<connected-to-fft_rd_addr>),      //              .fft_rd_addr
+		.fft_rd_data      (<connected-to-fft_rd_data>),      //              .fft_rd_data
+		.osg_wr_addr      (<connected-to-osg_wr_addr>),      //              .osg_wr_addr
+		.osg_wr_data      (<connected-to-osg_wr_data>),      //              .osg_wr_data
+		.osg_wr_ena       (<connected-to-osg_wr_ena>),       //              .osg_wr_ena
+		.osg_rd_addr      (<connected-to-osg_rd_addr>),      //              .osg_rd_addr
+		.osg_rd_data      (<connected-to-osg_rd_data>),      //              .osg_rd_data
+		.baseband_i       (<connected-to-baseband_i>),       //      Baseband.i
+		.baseband_q       (<connected-to-baseband_q>),       //              .q
+		.baseband_valid   (<connected-to-baseband_valid>)    //              .valid
+	);
+

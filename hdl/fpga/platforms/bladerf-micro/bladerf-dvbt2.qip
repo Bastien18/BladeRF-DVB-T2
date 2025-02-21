@@ -5,6 +5,7 @@ set altera_ip    [file normalize [file join $here ../../ip/altera]]
 set adi_ip       [file normalize [file join $here ../../ip/analogdevicesinc]]
 set nuand_ip     [file normalize [file join $here ../../ip/nuand]]
 set opencores_ip [file normalize [file join $here ../../ip/opencores]]
+set dvbt2_ip     [file normalize [file join $here ../../ip/DVBT2_mod]]
 
 # Altera IP
 set_global_assignment -name VHDL_FILE    [file normalize [file join $altera_ip common_dcfifo/common_dcfifo.vhd]]
@@ -42,3 +43,13 @@ set_global_assignment -name QIP_FILE  [file normalize                  nios_syst
 
 # Explicitly include Nios mem_init
 set_global_assignment -name QIP_FILE [file normalize bladeRF_nios/mem_init/meminit.qip]
+
+# Commsonic DVB-T2
+set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/DVBT2_mod.vhd]]
+set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/ea_cms0041_wrap.vhd]]
+set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/ea_cms0041.vhd]]
+set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/p_cms0041_comp.vhd]]
+set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/p_cms0041_config.vhd]]
+set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/p_cms0041_pack.vhd]]
+set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/p_cms0042_pack.vhd]]
+set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/p_cms0072_pack.vhd]]

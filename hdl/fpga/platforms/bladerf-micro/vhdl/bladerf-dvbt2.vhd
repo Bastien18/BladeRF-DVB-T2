@@ -162,6 +162,11 @@ architecture dvbt2_bladerf of bladerf is
     signal baseband_q_s           : std_logic_vector(13 downto 0);
     signal baseband_valid_s       : std_logic;
 
+    signal byte_count             : unsigned(7 DOWNTO 0); 
+    signal ts_data                : std_logic_vector(7 DOWNTO 0); 
+    signal ts_data_valid          : std_logic; 
+    signal ts_data_refclk         : std_logic;
+
     signal   ps_sync              : std_logic_vector(0 downto 0)          := (others => '0');
 
 
@@ -614,7 +619,7 @@ begin
     U_dvb_t2_modulator : entity work.DVBT2_mod
         port map(
             clock            => tx_clock,               -- cms0041_clock.clk
-            reset_n          => tx_reset,               --       reset_n.reset_n
+            reset_n          => not tx_reset,               --       reset_n.reset_n
             -- Reg is unused for now
             reg_address      => (others => '0'),        --  avalon_slave.address
             reg_wr_data      => (others => '0'),        --              .writedata
@@ -624,10 +629,14 @@ begin
             reg_cmd_ack      => open,                   --              .waitrequest_n
             reg_irq          => open,                   --           irq.irq
             -- Transport stream
+            --ts_data_clk      => tx_clock,               --        TS_Clk.clk see if tx_clock works
+            --ts_data_valid    => '0',                    --            TS.data_valid
+            --ts_data          => tx_sample_fifo.wdata(7 downto 0),          --              .data
+            --ts_data_refclk   => open,                   --              .data_refclk
             ts_data_clk      => tx_clock,               --        TS_Clk.clk see if tx_clock works
-            ts_data_valid    => '0',                    --            TS.data_valid
-            ts_data          => tx_sample_fifo.wdata(7 downto 0),          --              .data
-            ts_data_refclk   => open,                   --              .data_refclk
+            ts_data_valid    => ts_data_valid,                    --            TS.data_valid
+            ts_data          => ts_data,          --              .data
+            ts_data_refclk   => ts_data_refclk,                   --              .data_refclk
             ts_data_busy     => open,                   --              .data_busy
             -- Ram is unused for now
             ram_cs           => open,                   --           RAM.cs
@@ -687,6 +696,34 @@ begin
     --        end if;
     --    end loop;
     --end process;
+
+    ---------------------------------------------------------------------------------------- 
+    -- Generate the 188-byte TS stream at the exact byte rate required (NULL-packets) 
+    -- 
+    stuff_the_input : PROCESS (ts_data_refclk, tx_reset) BEGIN 
+     IF tx_reset = '1' THEN 
+       byte_count    <= to_unsigned(102, byte_count'LENGTH); 
+       ts_data_valid <= '0'; 
+       ts_data       <= (OTHERS => '0'); 
+     
+     ELSIF ts_data_refclk'EVENT AND ts_data_refclk='1' THEN 
+       -- Null stuff the HP TS input 
+       ts_data_valid <= '1'; 
+     
+       byte_count <= byte_count + 1; 
+       CASE to_integer(byte_count) IS 
+         WHEN 187     =>      -- Next byte is the sync byte 
+                              byte_count <= (OTHERS => '0'); 
+                              ts_data    <= STD_LOGIC_VECTOR(to_unsigned(16#47#, 8)); 
+         WHEN 0       =>      ts_data    <= STD_LOGIC_VECTOR(to_unsigned(16#1F#, 8)); 
+         WHEN 1       =>      ts_data    <= STD_LOGIC_VECTOR(to_unsigned(16#FF#, 8)); 
+         WHEN 2       =>      ts_data    <= STD_LOGIC_VECTOR(to_unsigned(16#10#, 8)); 
+         WHEN OTHERS  =>      ts_data    <= (OTHERS => '0'); 
+       END CASE; 
+     END IF;   
+    END PROCESS stuff_the_input; 
+    ---------------------------------------------------------------------------------------- 
+
 
     -- ###################
     -- RX Submodule
