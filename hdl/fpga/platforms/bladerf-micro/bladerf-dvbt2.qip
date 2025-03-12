@@ -5,7 +5,8 @@ set altera_ip    [file normalize [file join $here ../../ip/altera]]
 set adi_ip       [file normalize [file join $here ../../ip/analogdevicesinc]]
 set nuand_ip     [file normalize [file join $here ../../ip/nuand]]
 set opencores_ip [file normalize [file join $here ../../ip/opencores]]
-set dvbt2_ip     [file normalize [file join $here ../../ip/DVBT2_mod]]
+set dvbt2_ip     [file normalize [file join $here ../../../quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod]]
+set blockRAM     [file normalize [file join $here ../../../quartus/work/bladerf-micro-A9-dvbt2/blockRAM]]
 
 # Altera IP
 set_global_assignment -name VHDL_FILE    [file normalize [file join $altera_ip common_dcfifo/common_dcfifo.vhd]]
@@ -53,3 +54,7 @@ set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synth
 set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/p_cms0041_pack.vhd]]
 set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/p_cms0042_pack.vhd]]
 set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/p_cms0072_pack.vhd]]
+
+# Internal blockRAM
+set_global_assignment -name VHDL_FILE [file normalize [file join $blockRAM blockRAM.vhd]]
+

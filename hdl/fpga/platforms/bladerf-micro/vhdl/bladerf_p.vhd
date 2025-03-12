@@ -58,6 +58,15 @@ package bladerf_p is
     );
     end component;
 
+    component clockx2_pll
+        port (
+            refclk   : in  std_logic := '0'; --  refclk.clk
+            rst      : in  std_logic := '0'; --   reset.reset
+            outclk_0 : out std_logic;        -- outclk0.clk
+            locked   : out std_logic         --  locked.export
+        );
+    end component;
+
     component nios_system is
       port (
         clk_clk                         :   in  std_logic := 'X';

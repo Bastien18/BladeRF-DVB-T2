@@ -6,7 +6,7 @@
    version="1.0"
    description=""
    tags="INTERNAL_COMPONENT=true"
-   categories="" />
+   categories="System" />
  <parameter name="bonusData"><![CDATA[bonusData 
 {
    element DvbT2Mod_0
@@ -31,7 +31,7 @@
  <parameter name="hideFromIPCatalog" value="true" />
  <parameter name="lockedInterfaceDefinition" value="" />
  <parameter name="maxAdditionalLatency" value="1" />
- <parameter name="projectName" value="" />
+ <parameter name="projectName" value="bladerf.qpf" />
  <parameter name="sopcBorderPoints" value="false" />
  <parameter name="systemHash" value="0" />
  <parameter name="testBenchDutName" value="" />
@@ -47,18 +47,7 @@
   <port name="baseband_q" internal="baseband_q" />
   <port name="baseband_valid" internal="baseband_valid" />
  </interface>
- <interface name="QDR" internal="DvbT2Mod_0.QDR" type="conduit" dir="end">
-  <port name="fft_wr_addr" internal="fft_wr_addr" />
-  <port name="fft_wr_data" internal="fft_wr_data" />
-  <port name="fft_wr_ena" internal="fft_wr_ena" />
-  <port name="fft_rd_addr" internal="fft_rd_addr" />
-  <port name="fft_rd_data" internal="fft_rd_data" />
-  <port name="osg_wr_addr" internal="osg_wr_addr" />
-  <port name="osg_wr_data" internal="osg_wr_data" />
-  <port name="osg_wr_ena" internal="osg_wr_ena" />
-  <port name="osg_rd_addr" internal="osg_rd_addr" />
-  <port name="osg_rd_data" internal="osg_rd_data" />
- </interface>
+ <interface name="QDR" internal="DvbT2Mod_0.QDR" />
  <interface name="RAM" internal="DvbT2Mod_0.RAM" type="conduit" dir="end">
   <port name="ram_cs" internal="ram_cs" />
   <port name="ram_burst_access" internal="ram_burst_access" />
@@ -101,6 +90,13 @@
    dir="end">
   <port name="clock" internal="clock" />
  </interface>
+ <interface
+   name="cms0041_clock_x2"
+   internal="DvbT2Mod_0.cms0041_clock_x2"
+   type="clock"
+   dir="end">
+  <port name="clock_x2" internal="clock_x2" />
+ </interface>
  <interface name="irq" internal="DvbT2Mod_0.irq" type="interrupt" dir="end">
   <port name="reg_irq" internal="reg_irq" />
  </interface>
@@ -134,7 +130,7 @@
   <parameter name="GUI_INBAND_EQUALISER" value="false" />
   <parameter name="GUI_L1ACE_PROCESSOR" value="false" />
   <parameter name="GUI_MAX_FFT_SIZE" value="8k" />
-  <parameter name="GUI_OSG_USE_INTERNAL_RAM" value="false" />
+  <parameter name="GUI_OSG_USE_INTERNAL_RAM" value="true" />
   <parameter name="GUI_P2_BIAS_CELLS" value="false" />
   <parameter name="GUI_PAPR" value="true" />
   <parameter name="GUI_PCR_SUPPORT" value="true" />
@@ -143,7 +139,7 @@
   <parameter name="GUI_PRBS_PACKETS" value="true" />
   <parameter name="GUI_PRE_DISTORT" value="true" />
   <parameter name="GUI_RAM_TEST_SUPPORT" value="false" />
-  <parameter name="GUI_REGBANK_INITIALISATION" value="false" />
+  <parameter name="GUI_REGBANK_INITIALISATION" value="true" />
   <parameter name="GUI_RIF" value="None" />
   <parameter name="GUI_SEPARATE_DAC_PROG_CLOCK" value="Core Clock" />
   <parameter name="GUI_SEPARATE_PLL_PROG_CLOCK" value="Core Clock" />
@@ -151,7 +147,7 @@
   <parameter name="GUI_SUPPORTED_PLP_NUM" value="1" />
   <parameter name="GUI_T2ADAPT" value="true" />
   <parameter name="GUI_T2MI" value="false" />
-  <parameter name="GUI_USE_CONFIG_PACK" value="false" />
+  <parameter name="GUI_USE_CONFIG_PACK" value="true" />
  </module>
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.enableEccProtection" value="FALSE" />

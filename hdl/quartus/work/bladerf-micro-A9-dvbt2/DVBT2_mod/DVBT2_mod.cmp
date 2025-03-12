@@ -33,37 +33,3 @@
 		);
 	end component DVBT2_mod;
 
-	u0 : component DVBT2_mod
-		port map (
-			baseband_i       => CONNECTED_TO_baseband_i,       --         Baseband.i
-			baseband_q       => CONNECTED_TO_baseband_q,       --                 .q
-			baseband_valid   => CONNECTED_TO_baseband_valid,   --                 .valid
-			ram_cs           => CONNECTED_TO_ram_cs,           --              RAM.cs
-			ram_burst_access => CONNECTED_TO_ram_burst_access, --                 .burst_access
-			ram_burst_size   => CONNECTED_TO_ram_burst_size,   --                 .burst_size
-			ram_address      => CONNECTED_TO_ram_address,      --                 .address
-			ram_wr_en        => CONNECTED_TO_ram_wr_en,        --                 .wr_en
-			ram_wrdata       => CONNECTED_TO_ram_wrdata,       --                 .wrdata
-			ram_rd_en        => CONNECTED_TO_ram_rd_en,        --                 .rd_en
-			ram_rddata       => CONNECTED_TO_ram_rddata,       --                 .rddata
-			ram_rddata_valid => CONNECTED_TO_ram_rddata_valid, --                 .rddata_valid
-			ram_busy         => CONNECTED_TO_ram_busy,         --                 .busy
-			ram_available    => CONNECTED_TO_ram_available,    --                 .available
-			ram_empty        => CONNECTED_TO_ram_empty,        --                 .empty
-			ts_data_valid    => CONNECTED_TO_ts_data_valid,    --               TS.data_valid
-			ts_data          => CONNECTED_TO_ts_data,          --                 .data
-			ts_data_refclk   => CONNECTED_TO_ts_data_refclk,   --                 .data_refclk
-			ts_data_busy     => CONNECTED_TO_ts_data_busy,     --                 .data_busy
-			ts_data_clk      => CONNECTED_TO_ts_data_clk,      --           TS_Clk.clk
-			reg_address      => CONNECTED_TO_reg_address,      --     avalon_slave.address
-			reg_wr_data      => CONNECTED_TO_reg_wr_data,      --                 .writedata
-			reg_wr_en        => CONNECTED_TO_reg_wr_en,        --                 .write
-			reg_chip_en      => CONNECTED_TO_reg_chip_en,      --                 .chipselect
-			reg_rd_data      => CONNECTED_TO_reg_rd_data,      --                 .readdata
-			reg_cmd_ack      => CONNECTED_TO_reg_cmd_ack,      --                 .waitrequest_n
-			clock            => CONNECTED_TO_clock,            --    cms0041_clock.clk
-			clock_x2         => CONNECTED_TO_clock_x2,         -- cms0041_clock_x2.clk
-			reg_irq          => CONNECTED_TO_reg_irq,          --              irq.irq
-			reset_n          => CONNECTED_TO_reset_n           --          reset_n.reset_n
-		);
-

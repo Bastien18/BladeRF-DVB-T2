@@ -163,9 +163,28 @@ architecture dvbt2_bladerf of bladerf is
     signal baseband_valid_s       : std_logic;
 
     signal byte_count             : unsigned(7 DOWNTO 0); 
-    signal ts_data                : std_logic_vector(7 DOWNTO 0); 
-    signal ts_data_valid          : std_logic; 
-    signal ts_data_refclk         : std_logic;
+    signal ts_data_s                : std_logic_vector(7 DOWNTO 0); 
+    signal ts_data_valid_s          : std_logic; 
+    signal ts_data_refclk_s         : std_logic;
+    
+    signal clockx2_s              : std_logic;
+
+    -- blockRAM internal signal                    
+    signal ram_cs_s                : STD_LOGIC;                      
+    signal ram_burst_access_s      : STD_LOGIC;                      
+    signal ram_burst_size_s        : STD_LOGIC_VECTOR(3 DOWNTO 0);                                                               
+    signal ram_address_s           : STD_LOGIC_VECTOR(23 DOWNTO 0);
+    signal ram_wr_en_s             : STD_LOGIC;                      
+    signal ram_wrdata_s            : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    signal ram_rd_en_s             : STD_LOGIC;                      
+    signal ram_rddata_s            : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    signal ram_rddata_valid_s      : STD_LOGIC;                      
+    signal ram_busy_s              : STD_LOGIC;                      
+    signal ram_available_s         : STD_LOGIC;                      
+    signal ram_empty_s             : STD_LOGIC;   
+    
+    -- Signaltap_pll
+    signal clk_out_200MHz_s   : std_logic;
 
     signal   ps_sync              : std_logic_vector(0 downto 0)          := (others => '0');
 
@@ -262,6 +281,15 @@ begin
             sys_clock      => fx3_pclk,
             pll_locked     => fx3_pclk_pll_locked,
             pll_reset      => fx3_pclk_pll_reset
+        );
+
+    -- Clock_x2 for internal OSG RAM in DVB-T2_mod
+    U_clockx2_pll : component clockx2_pll
+        port map (
+            refclk   => fx3_pclk, --  refclk.clk
+            rst      => fx3_pclk_pll_reset, --   reset.reset
+            outclk_0 => clockx2_s,        -- outclk0.clk
+            locked   => open         --  locked.export
         );
 
 
@@ -512,6 +540,9 @@ begin
     led(2) <= tx_underflow_led  when nios_gpio.o.led_mode = '0' else not nios_gpio.o.leds(2);
     led(3) <= rx_overflow_led   when nios_gpio.o.led_mode = '0' else not nios_gpio.o.leds(3);
 
+    -- Mini exp1
+    --mini_exp1 <= fx3_pclk_pll;
+
     -- DAC SPI (data latched on falling edge)
     dac_sclk <= not nios_sclk when nios_gpio.o.adf_chip_enable = '0' else '0';
     dac_sdi  <= nios_sdio     when nios_gpio.o.adf_chip_enable = '0' else '0';
@@ -576,6 +607,7 @@ begin
             trigger_fire         => tx_trigger_ctl.fire,
             trigger_master       => tx_trigger_ctl.master,
             trigger_line         => tx_trigger_line,
+            --trigger_line         => 'Z',
 
             -- Eightbit mode
             eight_bit_mode_en    => eightbit_en_tx,
@@ -618,8 +650,9 @@ begin
 
     U_dvb_t2_modulator : entity work.DVBT2_mod
         port map(
-            clock            => tx_clock,               -- cms0041_clock.clk
-            reset_n          => not tx_reset,               --       reset_n.reset_n
+            clock            => fx3_pclk_pll,               -- fx3_pclk_pll is 100MHz clock
+            clock_x2         => clockx2_s,                            -- Internal OSG RAM clock 200MHz
+            reset_n          => not fx3_pclk_pll_reset,               --       Invert tx_reset to match reset_n
             -- Reg is unused for now
             reg_address      => (others => '0'),        --  avalon_slave.address
             reg_wr_data      => (others => '0'),        --              .writedata
@@ -629,39 +662,25 @@ begin
             reg_cmd_ack      => open,                   --              .waitrequest_n
             reg_irq          => open,                   --           irq.irq
             -- Transport stream
-            --ts_data_clk      => tx_clock,               --        TS_Clk.clk see if tx_clock works
-            --ts_data_valid    => '0',                    --            TS.data_valid
-            --ts_data          => tx_sample_fifo.wdata(7 downto 0),          --              .data
-            --ts_data_refclk   => open,                   --              .data_refclk
-            ts_data_clk      => tx_clock,               --        TS_Clk.clk see if tx_clock works
-            ts_data_valid    => ts_data_valid,                    --            TS.data_valid
-            ts_data          => ts_data,          --              .data
-            ts_data_refclk   => ts_data_refclk,                   --              .data_refclk
+            ts_data_clk      => '0',               --        TS_Clk.clk see if tx_clock works
+            ts_data_valid    => '0',                    --            TS.data_valid
+            ts_data          => (others => '0'),          --              .data
+            ts_data_refclk   => open,                   --              .data_refclk
             ts_data_busy     => open,                   --              .data_busy
-            -- Ram is unused for now
-            ram_cs           => open,                   --           RAM.cs
-            ram_burst_access => open,                   --              .burst_access
-            ram_burst_size   => open,                   --              .burst_size
-            ram_address      => open,                   --              .address
-            ram_wr_en        => open,                   --              .wr_en
-            ram_wrdata       => open,                   --              .wrdata
-            ram_rd_en        => open,                   --              .rd_en
-            ram_rddata       => (others => '0'),        --              .rddata
-            ram_rddata_valid => '0',                    --              .rddata_valid
-            ram_busy         => '0',                    --              .busy
-            ram_available    => '0',                    --              .available
-            ram_empty        => '0',                    --              .empty
-            -- QDR unused for now
-            fft_wr_addr      => open,                   --           QDR.fft_wr_addr
-            fft_wr_data      => open,                   --              .fft_wr_data
-            fft_wr_ena       => open,                   --              .fft_wr_ena
-            fft_rd_addr      => open,                   --              .fft_rd_addr
-            fft_rd_data      => (others => '0'),        --              .fft_rd_data
-            osg_wr_addr      => open,                   --              .osg_wr_addr
-            osg_wr_data      => open,                   --              .osg_wr_data
-            osg_wr_ena       => open,                   --              .osg_wr_ena
-            osg_rd_addr      => open,                   --              .osg_rd_addr
-            osg_rd_data      => (others => '0'),        --              .osg_rd_data
+            -- Ram 
+            ram_cs           => ram_cs_s,                   --           RAM.cs
+            ram_burst_access => ram_burst_access_s,                   --              .burst_access
+            ram_burst_size   => ram_burst_size_s,                   --              .burst_size
+            ram_address      => ram_address_s,                   --              .address
+            ram_wr_en        => ram_wr_en_s,                   --              .wr_en
+            ram_wrdata       => ram_wrdata_s,                   --              .wrdata
+            ram_rd_en        => ram_rd_en_s,                   --              .rd_en
+            ram_rddata       => ram_rddata_s,        --              .rddata
+            ram_rddata_valid => ram_rddata_valid_s,                    --              .rddata_valid
+            ram_busy         => ram_busy_s,                    --              .busy
+            ram_available    => ram_available_s,                    --              .available
+            ram_empty        => ram_empty_s,                    --              .empty
+            -- Baseband output
             baseband_i       => baseband_i_s,           --      Baseband.i
             baseband_q       => baseband_q_s,           --              .q
             baseband_valid   => baseband_valid_s        --              .valid
@@ -682,6 +701,24 @@ begin
         end loop;
     end process;
 
+    -- Internal blockRAM
+    U_blockRAM : entity work.blockRAM
+    port map(
+        cms0041_clock      => fx3_pclk_pll,
+        ram_cs             => ram_cs_s,
+        ram_burst_access   => ram_burst_access_s,
+        ram_burst_size     => ram_burst_size_s,
+        ram_address        => ram_address_s,
+        ram_wr_en          => ram_wr_en_s,
+        ram_wrdata         => ram_wrdata_s,
+        ram_rd_en          => ram_rd_en_s,
+        ram_rddata         => ram_rddata_s,
+        ram_rddata_valid   => ram_rddata_valid_s,
+        ram_busy           => ram_busy_s,
+        ram_available      => ram_available_s,
+        ram_empty          => ram_empty_s
+    );
+
     --dac_assignment_proc : process( all )
     --begin
     --    for i in dac_controls'range loop
@@ -700,29 +737,38 @@ begin
     ---------------------------------------------------------------------------------------- 
     -- Generate the 188-byte TS stream at the exact byte rate required (NULL-packets) 
     -- 
-    stuff_the_input : PROCESS (ts_data_refclk, tx_reset) BEGIN 
+    stuff_the_input : PROCESS (tx_clock, tx_reset) BEGIN 
      IF tx_reset = '1' THEN 
        byte_count    <= to_unsigned(102, byte_count'LENGTH); 
-       ts_data_valid <= '0'; 
-       ts_data       <= (OTHERS => '0'); 
+       ts_data_valid_s <= '0'; 
+       ts_data_s       <= (OTHERS => '0'); 
      
-     ELSIF ts_data_refclk'EVENT AND ts_data_refclk='1' THEN 
+     ELSIF tx_clock'EVENT AND tx_clock='1' THEN 
        -- Null stuff the HP TS input 
-       ts_data_valid <= '1'; 
+       ts_data_valid_s <= '1'; 
      
        byte_count <= byte_count + 1; 
        CASE to_integer(byte_count) IS 
          WHEN 187     =>      -- Next byte is the sync byte 
                               byte_count <= (OTHERS => '0'); 
-                              ts_data    <= STD_LOGIC_VECTOR(to_unsigned(16#47#, 8)); 
-         WHEN 0       =>      ts_data    <= STD_LOGIC_VECTOR(to_unsigned(16#1F#, 8)); 
-         WHEN 1       =>      ts_data    <= STD_LOGIC_VECTOR(to_unsigned(16#FF#, 8)); 
-         WHEN 2       =>      ts_data    <= STD_LOGIC_VECTOR(to_unsigned(16#10#, 8)); 
-         WHEN OTHERS  =>      ts_data    <= (OTHERS => '0'); 
+                              ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#47#, 8)); 
+         WHEN 0       =>      ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#1F#, 8)); 
+         WHEN 1       =>      ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#FF#, 8)); 
+         WHEN 2       =>      ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#10#, 8)); 
+         WHEN OTHERS  =>      ts_data_s    <= (OTHERS => '0'); 
        END CASE; 
      END IF;   
     END PROCESS stuff_the_input; 
     ---------------------------------------------------------------------------------------- 
+
+    -- signaltap_pll used to have a high enough frequency clock to do the sampling in signal tap analyser
+    --U_signaltap_pll : entity work.signaltap_pll
+    --    port map(
+    --        refclk   => tx_clock,
+    --        rst      => tx_reset,
+    --        outclk_0 => clk_out_200MHz_s, 
+    --        locked   => open
+    --    );
 
 
     -- ###################
@@ -749,6 +795,7 @@ begin
             trigger_fire           => rx_trigger_ctl.fire,
             trigger_master         => rx_trigger_ctl.master,
             trigger_line           => rx_trigger_line,
+            --trigger_line           => 'Z',
 
             -- Eightbit mode
             eight_bit_mode_en      => eightbit_en_rx,
@@ -769,6 +816,7 @@ begin
 
             -- Mini expansion signals
             mini_exp               => mini_exp2 & mini_exp1,
+            --mini_exp               => mini_exp2 & 'Z',
 
             -- Metadata to host via FX3
             meta_fifo_rclock       => fx3_pclk_pll,

@@ -2,7 +2,7 @@ set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_TOOL_NAM
 set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_TOOL_VERSION "17.1"
 set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_TOOL_ENV "Qsys"
 set_global_assignment -library "DVBT2_mod" -name SOPCINFO_FILE [file join $::quartus(qip_path) "../../DVBT2_mod.sopcinfo"]
-set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name SLD_INFO "QSYS_NAME DVBT2_mod HAS_SOPCINFO 1 GENERATION_ID 1737013363"
+set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name SLD_INFO "QSYS_NAME DVBT2_mod HAS_SOPCINFO 1 GENERATION_ID 1741784474"
 set_global_assignment -library "DVBT2_mod" -name MISC_FILE [file join $::quartus(qip_path) "../DVBT2_mod.cmp"]
 set_global_assignment -library "DVBT2_mod" -name SLD_FILE [file join $::quartus(qip_path) "DVBT2_mod.debuginfo"]
 set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_TARGETED_DEVICE_FAMILY "Cyclone V"
@@ -15,7 +15,7 @@ set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONEN
 set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_REPORT_HIERARCHY "On"
 set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_INTERNAL "Off"
 set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_VERSION "MS4w"
-set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QVVUT19HRU5FUkFUSU9OX0lE::MTczNzAxMzM2Mw==::QXV0byBHRU5FUkFUSU9OX0lE"
+set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QVVUT19HRU5FUkFUSU9OX0lE::MTc0MTc4NDQ3NA==::QXV0byBHRU5FUkFUSU9OX0lE"
 set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfRkFNSUxZ::Q3ljbG9uZSBW::QXV0byBERVZJQ0VfRkFNSUxZ"
 set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0U=::NUNFQkE5RjIzQzg=::QXV0byBERVZJQ0U="
 set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QVVUT19ERVZJQ0VfU1BFRURHUkFERQ==::OA==::QXV0byBERVZJQ0VfU1BFRURHUkFERQ=="
@@ -25,6 +25,9 @@ set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONEN
 set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QVVUT19DTVMwMDQxX0NMT0NLX0NMT0NLX1JBVEU=::LTE=::QXV0byBDTE9DS19SQVRF"
 set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QVVUT19DTVMwMDQxX0NMT0NLX0NMT0NLX0RPTUFJTg==::LTE=::QXV0byBDTE9DS19ET01BSU4="
 set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QVVUT19DTVMwMDQxX0NMT0NLX1JFU0VUX0RPTUFJTg==::LTE=::QXV0byBSRVNFVF9ET01BSU4="
+set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QVVUT19DTVMwMDQxX0NMT0NLX1gyX0NMT0NLX1JBVEU=::LTE=::QXV0byBDTE9DS19SQVRF"
+set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QVVUT19DTVMwMDQxX0NMT0NLX1gyX0NMT0NLX0RPTUFJTg==::LTE=::QXV0byBDTE9DS19ET01BSU4="
+set_global_assignment -entity "DVBT2_mod" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QVVUT19DTVMwMDQxX0NMT0NLX1gyX1JFU0VUX0RPTUFJTg==::LTE=::QXV0byBSRVNFVF9ET01BSU4="
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_NAME "Y21zMDA0MV93cmFw"
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_DISPLAY_NAME "RFZCLVQyIE1vZHVsYXRvciAtIENvbW1zb25pYw=="
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_REPORT_HIERARCHY "Off"
@@ -33,15 +36,15 @@ set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPO
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_VERSION "Ni44"
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_DESCRIPTION "RFZCLVQyIE1vZHVsYXRvciBjb3JlIGNvbXBsaWFudCB3aXRoIEVUU0kgRU4zMDIgNzU1"
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QlVJTERfQ1BVX0JZVEVfQUREUl9XSURUSA==::MjA=::QlVJTERfQ1BVX0JZVEVfQUREUl9XSURUSA=="
-set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "R1VJX1VTRV9DT05GSUdfUEFDSw==::ZmFsc2U=::VXNlci1kZWZpbmVkIHBfY21zMDA0MV9jb25maWcudmhkIFZIREwgZmlsZS4="
+set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "R1VJX1VTRV9DT05GSUdfUEFDSw==::dHJ1ZQ==::VXNlci1kZWZpbmVkIHBfY21zMDA0MV9jb25maWcudmhkIFZIREwgZmlsZS4="
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QlVJTERfREVWSUNFX0ZBTUlMWQ==::QUxUX0dFTkVSSUM=::QlVJTERfREVWSUNFX0ZBTUlMWQ=="
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "R1VJX0RFVklDRV9GQU1JTFk=::R2VuZXJpYw==::RlBHQSB0YXJnZXQgYXJjaGl0ZWN0dXJl"
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "Q0xPQ0tfRlJFUVVFTkNZX0tIWg==::MTAwMDAw::Q29yZSBjbG9jayBmcmVxdWVuY3kgKGtIeik="
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "R1VJX0RVQUxfQ0xPQ0tfRE9NQUlO::ZmFsc2U=::QnVpbGQgZHVhbCBjbG9jay1kb21haW4gc3lzdGVt"
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "Q0xPQ0tfUklGX0ZSRVFVRU5DWV9LSFo=::MA==::Q0xPQ0tfUklGX0ZSRVFVRU5DWV9LSFo="
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "R1VJX0NMT0NLX1JJRl9GUkVRVUVOQ1lfS0ha::MTAwMDAw::UklGIGNsb2NrIGZyZXF1ZW5jeSAoa0h6KQ=="
-set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QlVJTERfUkVHQkFOS19JTklUSUFMSVNBVElPTg==::MA==::QlVJTERfUkVHQkFOS19JTklUSUFMSVNBVElPTg=="
-set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "R1VJX1JFR0JBTktfSU5JVElBTElTQVRJT04=::ZmFsc2U=::RW5hYmxlIHJlZ2lzdGVyLWJhbmsgaW5pdGlsaXNhdGlvbiBlbmdpbmU="
+set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QlVJTERfUkVHQkFOS19JTklUSUFMSVNBVElPTg==::MQ==::QlVJTERfUkVHQkFOS19JTklUSUFMSVNBVElPTg=="
+set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "R1VJX1JFR0JBTktfSU5JVElBTElTQVRJT04=::dHJ1ZQ==::RW5hYmxlIHJlZ2lzdGVyLWJhbmsgaW5pdGlsaXNhdGlvbiBlbmdpbmU="
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QlVJTERfTUFYX0ZGVF9TSVpF::ODE5Mg==::QlVJTERfTUFYX0ZGVF9TSVpF"
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "R1VJX01BWF9GRlRfU0laRQ==::OGs=::TWF4aW11bSBzdXBwb3J0ZWQgdHJhbnNtaXNzaW9uIG1vZGUgc2l6ZQ=="
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QlVJTERfQ1JJVElDQUxfRklMVEVS::MA==::QlVJTERfQ1JJVElDQUxfRklMVEVS"
@@ -96,8 +99,8 @@ set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPO
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "R1VJX1NFUEFSQVRFX1BMTF9QUk9HX0NMT0NL::Q29yZSBDbG9jaw==::UExMIHByb2dyYW1taW5nIGNsb2Nr"
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "UExMX1BST0dfQ0xPQ0tfRlJFUVVFTkNZX0tIWg==::MA==::UExMX1BST0dfQ0xPQ0tfRlJFUVVFTkNZX0tIWg=="
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "R1VJX1BMTF9QUk9HX0NMT0NLX0ZSRVFVRU5DWV9LSFo=::MTAwMDAw::RXh0ZXJuYWwgUExMIHByb2dyYW1taW5nIGNsb2NrIGZyZXF1ZW5jeSAoa0h6KQ=="
-set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QlVJTERfT1NHX1VTRV9FWFRFUk5BTF9SQU0=::MQ==::QlVJTERfT1NHX1VTRV9FWFRFUk5BTF9SQU0="
-set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "R1VJX09TR19VU0VfSU5URVJOQUxfUkFN::ZmFsc2U=::SW50ZXJuYWwgT1NHIG1lbW9yeQ=="
+set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QlVJTERfT1NHX1VTRV9FWFRFUk5BTF9SQU0=::MA==::QlVJTERfT1NHX1VTRV9FWFRFUk5BTF9SQU0="
+set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "R1VJX09TR19VU0VfSU5URVJOQUxfUkFN::dHJ1ZQ==::SW50ZXJuYWwgT1NHIG1lbW9yeQ=="
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QlVJTERfU0RSQU1fV09SRF9BRERSX1dJRFRI::MjQ=::VElUTCBSQU0gYWRkcmVzcyB3aWR0aC4="
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QlVJTERfQ0lUTF9DQUNIRQ==::MA==::QlVJTERfQ0lUTF9DQUNIRQ=="
 set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPONENT_PARAMETER "QlVJTERfUkFNX1RFU1RfU1VQUE9SVA==::MQ==::QlVJTERfUkFNX1RFU1RfU1VQUE9SVA=="
@@ -107,7 +110,6 @@ set_global_assignment -entity "cms0041_wrap" -library "DVBT2_mod" -name IP_COMPO
 set_global_assignment -library "DVBT2_mod" -name VHDL_FILE [file join $::quartus(qip_path) "DVBT2_mod.vhd"]
 set_global_assignment -library "DVBT2_mod" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/p_cms0041_comp.vhd"]
 set_global_assignment -library "DVBT2_mod" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/p_cms0041_pack.vhd"]
-set_global_assignment -library "DVBT2_mod" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/p_cms0041_config.vhd"]
 set_global_assignment -library "DVBT2_mod" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/ea_cms0041_wrap.vhd"]
 set_global_assignment -library "DVBT2_mod" -name VHDL_FILE [file join $::quartus(qip_path) "submodules/ea_cms0041.vhd"]
 set_global_assignment -library "DVBT2_mod" -name SOURCE_FILE [file join $::quartus(qip_path) "submodules/oo100.ocp"]

@@ -1,0 +1,17 @@
+Partition Merge Status : Successful - Tue Feb 11 16:25:49 2025
+Quartus Prime Version : 17.1.0 Build 590 10/25/2017 SJ Standard Edition
+Revision Name : dvbt2
+Top-level Entity Name : bladerf
+Family : Cyclone V
+Logic utilization (in ALMs) : 9,965 / 113,560 ( 9 % )
+Total registers : 15501
+Total pins : 157 / 224 ( 70 % )
+Total virtual pins : 0
+Total block memory bits : 2,001,920 / 12,492,800 ( 16 % )
+Total DSP Blocks : 8 / 342 ( 2 % )
+Total HSSI RX PCSs : 0
+Total HSSI PMA RX Deserializers : 0
+Total HSSI TX PCSs : 0
+Total HSSI PMA TX Serializers : 0
+Total PLLs : 4 / 8 ( 50 % )
+Total DLLs : 0 / 4 ( 0 % )

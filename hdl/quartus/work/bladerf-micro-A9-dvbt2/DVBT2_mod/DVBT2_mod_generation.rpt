@@ -1,0 +1,34 @@
+Info: Starting: Create block symbol file (.bsf)
+Info: qsys-generate C:\Users\BPillonel\Documents\ASSISTANAT_PIERRE\HELIX\BladeRF-DVB-T2\hdl\quartus\work\bladerf-micro-A9-dvbt2\DVBT2_mod.qsys --block-symbol-file --output-directory=C:\Users\BPillonel\Documents\ASSISTANAT_PIERRE\HELIX\BladeRF-DVB-T2\hdl\quartus\work\bladerf-micro-A9-dvbt2\DVBT2_mod --family="Cyclone V" --part=5CEBA9F23C8
+Progress: Loading bladerf-micro-A9-dvbt2/DVBT2_mod.qsys
+Progress: Reading input file
+Progress: Adding DvbT2Mod_0 [DvbT2Mod 6.8]
+Progress: Parameterizing module DvbT2Mod_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: DVBT2_mod.DvbT2Mod_0: PCR support requires an additional licensable plug-in (CMS0042) from Commsonic.
+Info: DVBT2_mod.DvbT2Mod_0: PAPR-TR support requires an additional licensable plug-in (CMS0072) from Commsonic.
+Info: DVBT2_mod.DvbT2Mod_0: Internal FFT memory requires an additional clock_x2 input whose frequency is twice that of the main core clock input.
+Info: qsys-generate succeeded.
+Info: Finished: Create block symbol file (.bsf)
+Info: 
+Info: Starting: Create HDL design files for synthesis
+Info: qsys-generate C:\Users\BPillonel\Documents\ASSISTANAT_PIERRE\HELIX\BladeRF-DVB-T2\hdl\quartus\work\bladerf-micro-A9-dvbt2\DVBT2_mod.qsys --synthesis=VHDL --output-directory=C:\Users\BPillonel\Documents\ASSISTANAT_PIERRE\HELIX\BladeRF-DVB-T2\hdl\quartus\work\bladerf-micro-A9-dvbt2\DVBT2_mod\synthesis --family="Cyclone V" --part=5CEBA9F23C8
+Progress: Loading bladerf-micro-A9-dvbt2/DVBT2_mod.qsys
+Progress: Reading input file
+Progress: Adding DvbT2Mod_0 [DvbT2Mod 6.8]
+Progress: Parameterizing module DvbT2Mod_0
+Progress: Building connections
+Progress: Parameterizing connections
+Progress: Validating
+Progress: Done reading input file
+Info: DVBT2_mod.DvbT2Mod_0: PCR support requires an additional licensable plug-in (CMS0042) from Commsonic.
+Info: DVBT2_mod.DvbT2Mod_0: PAPR-TR support requires an additional licensable plug-in (CMS0072) from Commsonic.
+Info: DVBT2_mod.DvbT2Mod_0: Internal FFT memory requires an additional clock_x2 input whose frequency is twice that of the main core clock input.
+Info: DVBT2_mod: Generating DVBT2_mod "DVBT2_mod" for QUARTUS_SYNTH
+Info: DvbT2Mod_0: "DVBT2_mod" instantiated DvbT2Mod "DvbT2Mod_0"
+Info: DVBT2_mod: Done "DVBT2_mod" with 2 modules, 12 files
+Info: qsys-generate succeeded.
+Info: Finished: Create HDL design files for synthesis
