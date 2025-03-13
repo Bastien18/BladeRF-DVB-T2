@@ -70,9 +70,11 @@ In the IP core component editor, we can configure clock frequency of the T2 core
 #### SOLUTION
 Commsonic gaves us a config file p_cms0041_config.vhd which contains the commands to init the core properly and outputing data. Which means the TS interface don't need to be wired to anything. We must set "Enable register-bank initialisation engine" in the T2 core component editor GUI.
 
-They also gaves us a blockRAM VHDL implementation which will be wired to the TITL DDR RAM interface. This RAM is working at the same clocking frequency than the core which is 100MHz.
+They also gaves us a blockRAM VHDL implementation which will be wired to the TITL DDR RAM interface. This RAM is working at the same clocking frequency than the core which is 100MHz.The blockRAM VHDL component is described here [blockRAM.vhd](../hdl/quartus/work/bladerf-micro-A9-dvbt2/blockRAM/blockRAM.vhd)
 
 Since we don't use external RAM for the OSG interface (in charge of the fft), we need to set the "Internal OSG memory" option in the T2 core component editor GUI. This means we need to had a secondary clock to the T2 component (clock_x2) that has twice the frequency of the main clock frequency of the core.
+
+![](./picture/photo_2025-03-12_16-30-17.jpg)
 
 ### Project follow up (No more relevant)
 
