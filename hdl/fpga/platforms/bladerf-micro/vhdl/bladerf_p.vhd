@@ -171,12 +171,25 @@ package bladerf_p is
       );
     end component;
 
+    component fifo2ts is
+        port(
+            clk         : in std_logic;                                     
+            rst         : in std_logic;
+            fifo_data   : in std_logic_vector(31 downto 0);   -- Data from the sample fifo
+            fifo_empty  : in std_logic;                                     -- Indicate fifo's empty
+            fifo_rd_en  : out std_logic;                                    -- Reading fifo signal
+            ts_data     : out std_logic_vector(7 downto 0);                 -- TS data output
+            ts_valid    : out std_logic;                                    -- Validate TS data
+            ts_busy     : in std_logic                                      
+        );
+    end component;
+
     -- ========================================================================
     -- TYPEDEFS
     -- ========================================================================
 
     constant TX_FIFO_WWIDTH         : natural := 32;    -- write side data width
-    constant TX_FIFO_RWIDTH         : natural := 64;    -- read side data width
+    constant TX_FIFO_RWIDTH         : natural := 32;    -- read side data width
     constant TX_FIFO_LENGTH         : natural := 16384; -- samples
 
     constant RX_FIFO_WWIDTH         : natural := 64;    -- write side data width

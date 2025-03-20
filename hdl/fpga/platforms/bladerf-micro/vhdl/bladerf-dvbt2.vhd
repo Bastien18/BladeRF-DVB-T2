@@ -38,6 +38,8 @@ architecture dvbt2_bladerf of bladerf is
     signal sys_reset_pclk      : std_logic;
     signal sys_reset           : std_logic;
 
+    constant NUM_MIMO_STREAMS : natural := 1;
+
     signal sys_clock           : std_logic;
     signal sys_clock_out       : std_logic;
     signal sys_pll_locked      : std_logic;
@@ -166,6 +168,7 @@ architecture dvbt2_bladerf of bladerf is
     signal ts_data_s                : std_logic_vector(7 DOWNTO 0); 
     signal ts_data_valid_s          : std_logic; 
     signal ts_data_refclk_s         : std_logic;
+    signal ts_busy_s           : std_logic;
     
     signal clockx2_s              : std_logic;
 
@@ -587,66 +590,83 @@ begin
     -- ###################
     -- TX Submodule
     -- ###################
-    U_tx : entity work.tx
-        generic map (
-            NUM_STREAMS          => dac_controls'length
-        )
-        port map (
-            tx_reset             => tx_reset,
-            tx_clock             => tx_clock,
-            tx_enable            => tx_enable,
+    -- TX sample fifo
+    tx_sample_fifo.aclr <= fx3_pclk_pll_reset ;
+    tx_sample_fifo.wclock <= fx3_pclk_pll ;
+    tx_sample_fifo.rclock <= fx3_pclk_pll ;
+    U_tx_sample_fifo : entity work.tx_fifo
+      generic map (
+        LPM_NUMWORDS        => TX_FIFO_LENGTH
+      )
+      port map (
+        aclr                => tx_sample_fifo.aclr,
+        data                => tx_sample_fifo.wdata,
+        rdclk               => tx_sample_fifo.rclock,
+        rdreq               => tx_sample_fifo.rreq,
+        wrclk               => tx_sample_fifo.wclock,
+        wrreq               => tx_sample_fifo.wreq,
+        q                   => tx_sample_fifo.rdata,
+        rdempty             => tx_sample_fifo.rempty,
+        rdfull              => tx_sample_fifo.rfull,
+        rdusedw             => tx_sample_fifo.rused,
+        wrempty             => tx_sample_fifo.wempty,
+        wrfull              => tx_sample_fifo.wfull,
+        wrusedw             => tx_sample_fifo.wused
+      );
 
-            meta_en              => meta_en_tx,
-            timestamp_reset      => tx_ts_reset,
-            usb_speed            => usb_speed_tx,
-            tx_underflow_led     => tx_underflow_led,
-            tx_timestamp         => tx_timestamp,
+    U_fifo2ts : component fifo2ts
+    port map(
+        clk         => fx3_pclk_pll,                                     
+        rst         => fx3_pclk_pll_reset,
+        fifo_data   => tx_sample_fifo.rdata,
+        fifo_empty  => tx_sample_fifo.rempty,
+        fifo_rd_en  => tx_sample_fifo.rreq,
+        ts_data     => ts_data_s,
+        ts_valid    => ts_data_valid_s,
+        ts_busy     => ts_busy_s
+    );
 
-            -- Triggering
-            trigger_arm          => tx_trigger_ctl.arm,
-            trigger_fire         => tx_trigger_ctl.fire,
-            trigger_master       => tx_trigger_ctl.master,
-            trigger_line         => tx_trigger_line,
-            --trigger_line         => 'Z',
+    U_fifo_reader : entity work.fifo_reader
+    generic map(
+        NUM_STREAMS           => NUM_MIMO_STREAMS,
+        FIFO_READ_THROTTLE    => 1, -- TODO: can this be 0 ?
+        FIFO_USEDW_WIDTH      => tx_sample_fifo.rused'length,
+        FIFO_DATA_WIDTH       => tx_sample_fifo.rdata'length,
+        META_FIFO_USEDW_WIDTH => tx_meta_fifo.rused'length,
+        META_FIFO_DATA_WIDTH  => tx_meta_fifo.rdata'length
+    )
+    port map (
+        clock               =>  fx3_pclk_pll,
+        reset               =>  fx3_pclk_pll_reset,
+        enable              =>  tx_enable_pclk,
 
-            -- Eightbit mode
-            eight_bit_mode_en    => eightbit_en_tx,
+        usb_speed           =>  usb_speed_tx,
+        meta_en             =>  '0',
+        packet_en           =>  '0',
+        eight_bit_mode_en   =>  '0',
+        timestamp           =>  (others => '0'),
 
-            -- Packet FIFO
-            packet_en            => packet_en_tx,
-            packet_empty         => tx_packet_empty,
-            packet_control       => tx_packet_control,
-            packet_ready         => tx_packet_ready,
+        fifo_empty          =>  tx_sample_fifo.rempty,
+        fifo_usedw          =>  tx_sample_fifo.rused,
+        fifo_data           =>  tx_sample_fifo.rdata,
+        fifo_read           =>  open,
 
-            -- Samples from host via FX3
-            sample_fifo_wclock   => fx3_pclk_pll,
-            sample_fifo_wreq     => tx_sample_fifo.wreq,
-            -- sample_fifo_wdata    => tx_sample_fifo.wdata,
-            sample_fifo_wdata    => (others => '0'),
-            sample_fifo_wempty   => tx_sample_fifo.wempty,
-            sample_fifo_wfull    => tx_sample_fifo.wfull,
-            sample_fifo_wused    => tx_sample_fifo.wused,
+        packet_control      =>  open,
+        packet_empty        =>  open,
+        packet_ready        =>  '0',
 
-            -- Metadata from host via FX3
-            meta_fifo_wclock     => fx3_pclk_pll,
-            meta_fifo_wreq       => tx_meta_fifo.wreq,
-            meta_fifo_wdata      => tx_meta_fifo.wdata,
-            meta_fifo_wempty     => tx_meta_fifo.wempty,
-            meta_fifo_wfull      => tx_meta_fifo.wfull,
-            meta_fifo_wused      => tx_meta_fifo.wused,
+        meta_fifo_empty     =>  '0',
+        meta_fifo_usedw     =>  (others => '0'),
+        meta_fifo_data      =>  (others => '0'),
+        meta_fifo_read      =>  open,
 
-            -- Digital Loopback Interface
-            loopback_enabled     => tx_loopback_enabled,
-            loopback_fifo_wclock => tx_loopback_fifo.wclock,
-            loopback_fifo_wdata  => tx_loopback_fifo.wdata,
-            loopback_fifo_wreq   => tx_loopback_fifo.wreq,
-            loopback_fifo_wfull  => tx_loopback_fifo.wfull,
-            loopback_fifo_wused  => tx_loopback_fifo.wused,
+        in_sample_controls  =>  (others => SAMPLE_CONTROL_ENABLE),
+        out_samples         =>  open,
 
-            -- RFFE Interface
-            dac_controls         => dac_controls,
-            dac_streams          => dac_streams
-        );
+        underflow_led       =>  tx_underflow_led,
+        underflow_count     =>  open,
+        underflow_duration  =>  x"ffff"
+    );
 
     U_dvb_t2_modulator : entity work.DVBT2_mod
         port map(
@@ -662,11 +682,16 @@ begin
             reg_cmd_ack      => open,                   --              .waitrequest_n
             reg_irq          => open,                   --           irq.irq
             -- Transport stream
-            ts_data_clk      => '0',               --        TS_Clk.clk see if tx_clock works
-            ts_data_valid    => '0',                    --            TS.data_valid
-            ts_data          => (others => '0'),          --              .data
-            ts_data_refclk   => open,                   --              .data_refclk
-            ts_data_busy     => open,                   --              .data_busy
+            --ts_data_clk      => fx3_pclk_pll,               --        TS_Clk.clk see if tx_clock works
+            --ts_data_valid    => ts_data_valid_s,                    --            TS.data_valid
+            --ts_data          => ts_data_s,          --              .data
+            --ts_data_refclk   => ts_data_refclk_s,                   --              .data_refclk
+            --ts_data_busy     => open,                   --              .data_busy
+            ts_data_clk      => fx3_pclk_pll,               --        TS_Clk.clk see if tx_clock works
+            ts_data_valid    => ts_data_valid_s,                    --            TS.data_valid
+            ts_data          => ts_data_s,          --              .data
+            ts_data_refclk   => ts_data_refclk_s,                   --              .data_refclk
+            ts_data_busy     => ts_busy_s,                   --              .data_busy
             -- Ram 
             ram_cs           => ram_cs_s,                   --           RAM.cs
             ram_burst_access => ram_burst_access_s,                   --              .burst_access
@@ -719,25 +744,10 @@ begin
         ram_empty          => ram_empty_s
     );
 
-    --dac_assignment_proc : process( all )
-    --begin
-    --    for i in dac_controls'range loop
-    --        dac_controls(i).enable   <= (ad9361.ch(i).dac.i.enable or ad9361.ch(i).dac.q.enable or tx_loopback_enabled) and
-    --                                    mimo_tx_enables(i);
-    --        dac_controls(i).data_req <= (ad9361.ch(i).dac.i.valid  or ad9361.ch(i).dac.q.valid  or tx_loopback_enabled) and
-    --                                    mimo_tx_enables(i);
-    --
-    --        if (rising_edge(tx_clock) and dac_streams(i).data_v = '1') then
-    --            ad9361.ch(i).dac.i.data  <= std_logic_vector(dac_streams(i).data_i(11 downto 0)) & "0000";
-    --            ad9361.ch(i).dac.q.data  <= std_logic_vector(dac_streams(i).data_q(11 downto 0)) & "0000";
-    --        end if;
-    --    end loop;
-    --end process;
-
     ---------------------------------------------------------------------------------------- 
     -- Generate the 188-byte TS stream at the exact byte rate required (NULL-packets) 
     -- 
-    stuff_the_input : PROCESS (tx_clock, tx_reset) BEGIN 
+    /*stuff_the_input : PROCESS (tx_clock, tx_reset) BEGIN 
      IF tx_reset = '1' THEN 
        byte_count    <= to_unsigned(102, byte_count'LENGTH); 
        ts_data_valid_s <= '0'; 
@@ -755,20 +765,87 @@ begin
          WHEN 0       =>      ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#1F#, 8)); 
          WHEN 1       =>      ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#FF#, 8)); 
          WHEN 2       =>      ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#10#, 8)); 
-         WHEN OTHERS  =>      ts_data_s    <= (OTHERS => '0'); 
+         WHEN OTHERS  =>      ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#AA#, 8)); 
        END CASE; 
      END IF;   
-    END PROCESS stuff_the_input; 
+    END PROCESS stuff_the_input;*/ 
     ---------------------------------------------------------------------------------------- 
 
-    -- signaltap_pll used to have a high enough frequency clock to do the sampling in signal tap analyser
-    --U_signaltap_pll : entity work.signaltap_pll
-    --    port map(
-    --        refclk   => tx_clock,
-    --        rst      => tx_reset,
-    --        outclk_0 => clk_out_200MHz_s, 
-    --        locked   => open
-    --    );
+    --dac_assignment_proc : process( all )
+    --begin
+    --    for i in dac_controls'range loop
+    --        dac_controls(i).enable   <= (ad9361.ch(i).dac.i.enable or ad9361.ch(i).dac.q.enable or tx_loopback_enabled) and
+    --                                    mimo_tx_enables(i);
+    --        dac_controls(i).data_req <= (ad9361.ch(i).dac.i.valid  or ad9361.ch(i).dac.q.valid  or tx_loopback_enabled) and
+    --                                    mimo_tx_enables(i);
+    --
+    --        if (rising_edge(tx_clock) and dac_streams(i).data_v = '1') then
+    --            ad9361.ch(i).dac.i.data  <= std_logic_vector(dac_streams(i).data_i(11 downto 0)) & "0000";
+    --            ad9361.ch(i).dac.q.data  <= std_logic_vector(dac_streams(i).data_q(11 downto 0)) & "0000";
+    --        end if;
+    --    end loop;
+    --end process;
+
+    /*U_tx : entity work.tx
+        generic map (
+            NUM_STREAMS          => dac_controls'length
+        )
+        port map (
+            tx_reset             => tx_reset,
+            tx_clock             => tx_clock,
+            tx_enable            => tx_enable,
+
+            meta_en              => meta_en_tx,
+            timestamp_reset      => tx_ts_reset,
+            usb_speed            => usb_speed_tx,
+            tx_underflow_led     => tx_underflow_led,
+            tx_timestamp         => tx_timestamp,
+
+            -- Triggering
+            trigger_arm          => tx_trigger_ctl.arm,
+            trigger_fire         => tx_trigger_ctl.fire,
+            trigger_master       => tx_trigger_ctl.master,
+            trigger_line         => tx_trigger_line,
+            --trigger_line         => 'Z',
+
+            -- Eightbit mode
+            eight_bit_mode_en    => eightbit_en_tx,
+
+            -- Packet FIFO
+            packet_en            => packet_en_tx,
+            packet_empty         => tx_packet_empty,
+            packet_control       => tx_packet_control,
+            packet_ready         => tx_packet_ready,
+
+            -- Samples from host via FX3
+            sample_fifo_wclock   => fx3_pclk_pll,
+            sample_fifo_wreq     => tx_sample_fifo.wreq,
+            sample_fifo_wdata    => tx_sample_fifo.wdata,
+            --sample_fifo_wdata    => (others => '0'),
+            sample_fifo_wempty   => tx_sample_fifo.wempty,
+            sample_fifo_wfull    => tx_sample_fifo.wfull,
+            sample_fifo_wused    => tx_sample_fifo.wused,
+
+            -- Metadata from host via FX3
+            meta_fifo_wclock     => fx3_pclk_pll,
+            meta_fifo_wreq       => tx_meta_fifo.wreq,
+            meta_fifo_wdata      => tx_meta_fifo.wdata,
+            meta_fifo_wempty     => tx_meta_fifo.wempty,
+            meta_fifo_wfull      => tx_meta_fifo.wfull,
+            meta_fifo_wused      => tx_meta_fifo.wused,
+
+            -- Digital Loopback Interface
+            loopback_enabled     => tx_loopback_enabled,
+            loopback_fifo_wclock => tx_loopback_fifo.wclock,
+            loopback_fifo_wdata  => tx_loopback_fifo.wdata,
+            loopback_fifo_wreq   => tx_loopback_fifo.wreq,
+            loopback_fifo_wfull  => tx_loopback_fifo.wfull,
+            loopback_fifo_wused  => tx_loopback_fifo.wused,
+
+            -- RFFE Interface
+            dac_controls         => dac_controls,
+            dac_streams          => dac_streams
+        );*/
 
 
     -- ###################
