@@ -38,7 +38,7 @@ architecture dvbt2_bladerf of bladerf is
     signal sys_reset_pclk      : std_logic;
     signal sys_reset           : std_logic;
 
-    constant NUM_MIMO_STREAMS : natural := 1;
+    constant NUM_MIMO_STREAMS : natural := 2;
 
     signal sys_clock           : std_logic;
     signal sys_clock_out       : std_logic;
@@ -614,7 +614,7 @@ begin
         wrusedw             => tx_sample_fifo.wused
       );
 
-    U_fifo2ts : component fifo2ts
+    /*U_fifo2ts : component fifo2ts
     port map(
         clk         => fx3_pclk_pll,                                     
         rst         => fx3_pclk_pll_reset,
@@ -624,7 +624,7 @@ begin
         ts_data     => ts_data_s,
         ts_valid    => ts_data_valid_s,
         ts_busy     => ts_busy_s
-    );
+    );*/
 
     U_fifo_reader : entity work.fifo_reader
     generic map(
@@ -638,29 +638,29 @@ begin
     port map (
         clock               =>  fx3_pclk_pll,
         reset               =>  fx3_pclk_pll_reset,
-        enable              =>  tx_enable_pclk,
+        enable              =>  tx_enable,
 
         usb_speed           =>  usb_speed_tx,
         meta_en             =>  '0',
-        packet_en           =>  '0',
-        eight_bit_mode_en   =>  '0',
-        timestamp           =>  (others => '0'),
+        packet_en           =>  packet_en_tx,
+        eight_bit_mode_en   =>  eightbit_en_tx,
+        timestamp           =>  tx_timestamp,
 
         fifo_empty          =>  tx_sample_fifo.rempty,
         fifo_usedw          =>  tx_sample_fifo.rused,
         fifo_data           =>  tx_sample_fifo.rdata,
-        fifo_read           =>  open,
+        fifo_read           =>  tx_sample_fifo.rreq,
 
-        packet_control      =>  open,
-        packet_empty        =>  open,
-        packet_ready        =>  '0',
+        packet_control      =>  tx_packet_control,
+        packet_empty        =>  tx_packet_empty,
+        packet_ready        =>  tx_packet_ready,
 
         meta_fifo_empty     =>  '0',
         meta_fifo_usedw     =>  (others => '0'),
         meta_fifo_data      =>  (others => '0'),
         meta_fifo_read      =>  open,
 
-        in_sample_controls  =>  (others => SAMPLE_CONTROL_ENABLE),
+        in_sample_controls  =>  dac_controls,
         out_samples         =>  open,
 
         underflow_led       =>  tx_underflow_led,

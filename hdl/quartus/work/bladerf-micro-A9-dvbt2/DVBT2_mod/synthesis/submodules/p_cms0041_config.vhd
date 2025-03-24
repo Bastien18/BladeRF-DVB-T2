@@ -27,9 +27,6 @@
 -- synthesis 
 
 library cms0041_lib;
-
-
-
  
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
