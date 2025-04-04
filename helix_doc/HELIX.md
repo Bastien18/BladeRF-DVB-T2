@@ -76,6 +76,166 @@ Since we don't use external RAM for the OSG interface (in charge of the fft), we
 
 ![](./picture/photo_2025-03-12_16-30-17.jpg)
 
+Now something is coming out the T2 I/Q output.
+
+### Adapting the TS interface to the data FIFO
+
+#### Fifo reader behavior 
+
+fifo-current <= fifo.futur
+
+1st step (unpacking): 
+- Return a de type fifo-fsm_t sample stream-t type that contains data_i, datang and data_v (for validation) 
+- This fct unpack a big std_logic_vector into the sample_stream_t like so:
+
+![](./picture/Screenshot%202025-04-03%20103017.png)
+
+- Then it fills the out_sample_t field of the fifo_future record
+
+2nd step is checking in which state the fifo_current is :
+
+- CASE compute enabled channel:
+
+1. Just count off both channels which ones does have the in_sample_control(x).enable_to_high
+2. Update fifo_future_enabled_channels
+3. Update fifo_future_state to COMPUTE_OFFSET
+
+- CASE compute offset
+
+1. Init the starting index based on which channel are enabled
+2. CH0=0 & CH1=1 if both are enabled  
+else  
+CH0=0 & CH1=0
+3. Stores the index in fifo_future.ch_offsets
+4. Update the actual number of valid data remaining in fifo_data -> NUM_STREAM - fifo_current.enabled_chanel
+5. Update state to read packet if packet_en = '1' else goes to read sample
+
+- CASE read_packet
+
+1. Check if we are at the end of packet and if we need to skip padding -> reset fifo_future_smaples_left to NUM_STREAMS-1
+2. Store currnet cached date in fifo_future if data contains more than 32bits and there's no sample left  
+elsif there's still 1 sample left -> stores them in fifo_future_packet_control.data
+3. If there's less then 32bits in fifo_data -> stores them in fifo_future_packet_control.data
+4. Init fifo_future.packet_control.pkt_eop to '0'
+5. If it's time to send data (meta_time_go) & if there's still data to send (dma_downcount > 0)
+5.1 If it's the last word to send (dma_downcount = '1')=> Future packet_control EOP is set to one  
+5.2 Set data valid to '1'  
+5.3 If every samples in the fifo have been treated (fifo_current_samples_left = NUM_STREMS - 1)=> Start new reading (fifo_future.fifo_read <= '1')  
+5.4 If every samples have been readed (fifo_current.sample_left = '0')=> reset sample_left  
+5.5 Else => Decrement sample_left
+
+- CASE read_samples
+
+1. Reset fifo_future.downcount
+2. Go to READ_HOLDOFF if holdoff signal is at '1'
+3. If holdoff is diabled, fifo is not empty and meta is disabled or enabled but it's time to send data (meta_tim_go = '1')  
+3.1 For every channels we check if it's enabled and if it requests data -> if that's the case we validate the data => fifo_future.out_samples(i).data_v = '1'   
+3.2 If a valide read request is detected  
+3.2.1 
+> If there's no sample left =>  
+Reload smaple_left  
+Reset Shift index to 0  
+Alternate reading if 8its mode enabled  
+If there's still samples to be processed =>  
+Increment shift index by the number of enabled channels  
+Decrement the amount of sample left
+
+3.3 If downcount is different than 0, meaning we want to temparally pause the fifo -> we go into READ_THROTTLE
+
+#### System synthesis
+
+![](./picture/Screenshot%202025-04-03%20133208.png)
+
+#### Things to delete
+
+- [x] Stop unpacking data into i/q samples
+- [x] Stop computing enabled channels since the modulation stage comes after fifo
+- [x] Stop computing offset
+- [x] Stop using packet mode
+- [x] Stop checking channel's relative enable and read_request
+- [x] Stop handling sample_left since it relies on channels. Instead just enable the fifo_future.fifo_read when fifo is not empty
+
+#### State machine after previous deletions
+
+![](./picture/Screenshot%202025-04-03%20134249.png)
+
+#### Dataflow from fifo to transport stream
+
+![](./picture/Screenshot%202025-04-03%20134354.png)
+
+#### New state machine with TS handling
+
+NB: In this case, FIFO_READ_THROTTLE is tie to '0' => this will skip the READ_THROTTLE state
+
+![](./picture/Screenshot%202025-04-03%20134458.png)
+
+#### Chronogram of expected fifo to transport stream behaviour
+
+![](./picture/Screenshot%202025-04-03%20134929.png)
+
+#### Working state machine
+
+![](./picture/Screenshot%202025-04-03%20135051.png)
+
+### Measuring a nice OFDM signal at the TX RF output
+
+#### First measure
+
+![](./picture/photo_6010060557949979435_y%20(1).jpg)
+
+In this first measure, we see a spike at 925MHz that is the default TX frequency that we set with the bladeRF-cli. We also see that no samples seems to be transmitted.
+
+First things to ensure are:
+
+- Having the T2 core running at the correct frequency
+- Having the DAC running at the correct sampling rate
+- Having the correct TX frequency set on the DAC
+
+From spec we know we'll use a bandwidth of 8MHz. From that we can calculate :
+
+$ Sampling Rate = (Bandwidth * 8) / 7 = (8000000.0 * 8) / 7 \approx 9142857,143Hz $
+
+Our T2 core must run at the same frequency than the sampling rate calculated since it output new sample each clock cycle.
+
+- T2 core clock frequency       : 9.142857MHz
+- AD936x sampling rate          : 9.142857MHz
+- AD936x TX frequency           : 635MHz
+
+Things to change:
+
+- [x] Change DVBT2 core clock in component editor
+- [x] Add a PLL that output 9.142857MHz for the T2 core clock
+- [x] Change the clockx2 pll to output 9.142857 * 2 = 18.285714MHz
+- [x] Change DAC settings in the [bladerf.conf](../sim/bladerf.conf)
+
+Unfortunatly it seems that running the core at 9.14MHz was to slow to get something on the T2 I/Q output. 
+Thankfully, the core can have a dual clock option set. This option let the core run at the desired frequency and gives a new input named clock_rif which will be use for cadencing the output sampling. The samples will be feeded through a resampler stage before getting out I/Q output.
+
+Things to change:
+
+- [x] Set the dual clock option on the T2 core
+- [x] Change the main clock for the 100MHz one
+- [x] Change the clockx2_pll to 200MHz value
+- [x] Connect the 9.14MHz pll to clock_rif
+
+Results:
+
+![](./picture/photo_6014772648174797894_y.jpg)
+
+Here we see a form that is near what we are expecting. The corners of the spectrum should be more square.
+
+#### Improve OFDM spectrum shape
+
+We decided to increase the sampling rate to see if it improves the OFDM shape.
+
+Results with sampling rate @36.571428MHz:
+
+![](./picture/photo_6014772648174798016_y.jpg)
+
+Increasing the samplerate only increase the bandwidth and do not improve the OFDM shape.
+
+
+
 ### Project follow up (No more relevant)
 
 For now on I'm experimenting on the ADALM PLUTO to see how we can interact with it. I need to check:
