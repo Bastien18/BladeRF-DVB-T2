@@ -25,6 +25,7 @@ library ieee;
 
 library work;
     use work.common_dcfifo_p.all;
+    use work.fifo_readwrite_p.all;
 
 package bladerf_p is
 
@@ -59,6 +60,15 @@ package bladerf_p is
     end component;
 
     component clockx2_pll
+        port (
+            refclk   : in  std_logic := '0'; --  refclk.clk
+            rst      : in  std_logic := '0'; --   reset.reset
+            outclk_0 : out std_logic;        -- outclk0.clk
+            locked   : out std_logic         --  locked.export
+        );
+    end component;
+
+    component T2_clock is
         port (
             refclk   : in  std_logic := '0'; --  refclk.clk
             rst      : in  std_logic := '0'; --   reset.reset
@@ -172,15 +182,50 @@ package bladerf_p is
     end component;
 
     component fifo2ts is
+        generic (
+            NUM_STREAMS           : natural                 := 1;
+            FIFO_READ_THROTTLE    : natural range 0 to 255  := 1;
+            FIFO_USEDW_WIDTH      : natural                 := 12;
+            FIFO_DATA_WIDTH       : natural                 := 32;
+            META_FIFO_USEDW_WIDTH : natural                 := 3;
+            META_FIFO_DATA_WIDTH  : natural                 := 128
+        );
         port(
-            clk         : in std_logic;                                     
-            rst         : in std_logic;
-            fifo_data   : in std_logic_vector(31 downto 0);   -- Data from the sample fifo
-            fifo_empty  : in std_logic;                                     -- Indicate fifo's empty
-            fifo_rd_en  : out std_logic;                                    -- Reading fifo signal
-            ts_data     : out std_logic_vector(7 downto 0);                 -- TS data output
-            ts_valid    : out std_logic;                                    -- Validate TS data
-            ts_busy     : in std_logic                                      
+            clock                 : in std_logic;                                     
+            reset                 : in std_logic;
+            enable              : in std_logic;
+    
+            usb_speed           : in std_logic;
+            meta_en             :   in      std_logic;
+            packet_en           :   in      std_logic;
+            eight_bit_mode_en   :   in      std_logic;
+            timestamp           :   in      unsigned(63 downto 0);
+    
+            fifo_usedw          :   in      std_logic_vector(FIFO_USEDW_WIDTH-1 downto 0);
+            fifo_read           :   out     std_logic;
+            fifo_empty          :   in      std_logic;
+            fifo_data           :   in      std_logic_vector(FIFO_DATA_WIDTH-1 downto 0);
+            fifo_holdoff        :   in      std_logic := '0';
+    
+            packet_control      :   out     packet_control_t;
+            packet_empty        :   out     std_logic;
+            packet_ready        :   in      std_logic;
+    
+            meta_fifo_usedw     :   in      std_logic_vector(META_FIFO_USEDW_WIDTH-1 downto 0);
+            meta_fifo_read      :   buffer  std_logic := '0';
+            meta_fifo_empty     :   in      std_logic;
+            meta_fifo_data      :   in      std_logic_vector(META_FIFO_DATA_WIDTH-1 downto 0);
+    
+            in_sample_controls  :   in      sample_controls_t(0 to NUM_STREAMS-1) := (others => SAMPLE_CONTROL_DISABLE);
+            out_samples         :   out     std_logic_vector(FIFO_DATA_WIDTH-1 downto 0)  := (others => '0');
+    
+            underflow_led       :   buffer  std_logic;
+            underflow_count     :   buffer  unsigned(63 downto 0);
+            underflow_duration  :   in      unsigned(15 downto 0);
+    
+            ts_data             : out std_logic_vector(7 downto 0);                 -- TS data output
+            ts_valid            : out std_logic;                                    -- Validate TS data
+            ts_busy             : in std_logic                                      
         );
     end component;
 

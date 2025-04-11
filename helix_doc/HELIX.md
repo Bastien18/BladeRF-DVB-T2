@@ -234,6 +234,30 @@ Results with sampling rate @36.571428MHz:
 
 Increasing the samplerate only increase the bandwidth and do not improve the OFDM shape.
 
+Then I try to input another transport stream file. The first one was a 257MB file encoded with a bitrate of approx. 4000Kbps representing a video of 1 minute and 30sec. The second one I tried is 782MB @ a bitrate of 30Mbps representing approx. 27 minutes of video.
+
+No improvement has been seen but we can see the signal a little longer on the spectrum analyser.
+
+Then I try to configure the register of the T2 core (in the [p_cms0041_config.vhd](../hdl/quartus/work/bladerf-micro-A9-dvbt2/DVBT2_mod/synthesis/submodules/p_cms0041_config.vhd) file) to match the specifications expected:
+
+Guard interval 1/32  
+PAPR disabled  
+L1 constellation BPSK  
+Code rate 1/2  
+LDPC 16k  
+PP4  
+7 OFDM symbol per T2 frame  
+Bandwidth 8MHz  
+
+I also set the TX1 gain to 60dB on the ad936x via the bladeRF-cli.
+
+Here are the result:
+
+![](./picture/photo_6030627116221057867_y.jpg)
+
+No real improvement of the shoulders of the signal in the spectrum analyser.
+
+Then, I tried to storing pre-made sample in the OSG RAM od the T2 core and disable the TS interface by setting the force TS NULL packet to '1'. But it didn't change the spectrum shape.
 
 
 ### Project follow up (No more relevant)

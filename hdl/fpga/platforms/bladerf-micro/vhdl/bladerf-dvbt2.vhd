@@ -170,6 +170,7 @@ architecture dvbt2_bladerf of bladerf is
     signal ts_data_refclk_s         : std_logic;
     signal ts_busy_s           : std_logic;
     
+    signal t2_clock_s             : std_logic;
     signal clockx2_s              : std_logic;
 
     -- blockRAM internal signal                    
@@ -284,6 +285,15 @@ begin
             sys_clock      => fx3_pclk,
             pll_locked     => fx3_pclk_pll_locked,
             pll_reset      => fx3_pclk_pll_reset
+        );
+
+    -- T2 core clock
+    U_T2_clock : component T2_clock
+        port map(
+            refclk   => fx3_pclk,
+            rst      => fx3_pclk_pll_reset,
+            outclk_0 => T2_clock_s,
+            locked   => open
         );
 
     -- Clock_x2 for internal OSG RAM in DVB-T2_mod
@@ -626,10 +636,10 @@ begin
         ts_busy     => ts_busy_s
     );*/
 
-    U_fifo_reader : entity work.fifo_reader
+    U_fifo2ts : component fifo2ts
     generic map(
         NUM_STREAMS           => NUM_MIMO_STREAMS,
-        FIFO_READ_THROTTLE    => 1, -- TODO: can this be 0 ?
+        FIFO_READ_THROTTLE    => 0, -- TODO: can this be 0 ?
         FIFO_USEDW_WIDTH      => tx_sample_fifo.rused'length,
         FIFO_DATA_WIDTH       => tx_sample_fifo.rdata'length,
         META_FIFO_USEDW_WIDTH => tx_meta_fifo.rused'length,
@@ -665,13 +675,18 @@ begin
 
         underflow_led       =>  tx_underflow_led,
         underflow_count     =>  open,
-        underflow_duration  =>  x"ffff"
+        underflow_duration  =>  x"ffff",
+
+        ts_data             => ts_data_s,
+        ts_valid            => ts_data_valid_s,
+        ts_busy             => ts_busy_s 
     );
 
     U_dvb_t2_modulator : entity work.DVBT2_mod
         port map(
             clock            => fx3_pclk_pll,               -- fx3_pclk_pll is 100MHz clock
             clock_x2         => clockx2_s,                            -- Internal OSG RAM clock 200MHz
+            clock_rif        => t2_clock_s,                           -- Dual clock for output RF
             reset_n          => not fx3_pclk_pll_reset,               --       Invert tx_reset to match reset_n
             -- Reg is unused for now
             reg_address      => (others => '0'),        --  avalon_slave.address
@@ -719,7 +734,7 @@ begin
             dac_controls(i).data_req <= (ad9361.ch(i).dac.i.valid  or ad9361.ch(i).dac.q.valid  or tx_loopback_enabled) and
                                         mimo_tx_enables(i);
 
-            if (rising_edge(tx_clock) and dac_streams(i).data_v = '1') then
+            if (rising_edge(tx_clock) and baseband_valid_s = '1') then
                 ad9361.ch(i).dac.i.data  <= std_logic_vector(baseband_i_s & "00");
                 ad9361.ch(i).dac.q.data  <= std_logic_vector(baseband_q_s & "00");
             end if;

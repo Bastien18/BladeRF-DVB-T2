@@ -12,7 +12,7 @@
 # or its authorized distributors. Please refer to the applicable 
 # agreement for further details.
 
-# ACDS 17.1 590 win32 2025.04.04.09:22:37
+# ACDS 17.1 590 win32 2025.04.04.15:16:15
 
 # ----------------------------------------
 # vcsmx - auto-generated simulation script
@@ -20,7 +20,7 @@
 # ----------------------------------------
 # This script provides commands to simulate the following IP detected in
 # your Quartus project:
-#     clockx2_pll
+#     T2_clock
 # 
 # Altera recommends that you source this Quartus-generated IP simulation
 # script from your own customized top-level script, and avoid editing this
@@ -96,7 +96,7 @@
 # 
 # IP SIMULATION SCRIPT
 # ----------------------------------------
-# If clockx2_pll is one of several IP cores in your
+# If T2_clock is one of several IP cores in your
 # Quartus project, you can generate a simulation script
 # suitable for inclusion in your top-level simulation
 # script by running the following command line:
@@ -107,10 +107,10 @@
 # within the Quartus project, and generate a unified
 # script which supports all the Altera IP within the design.
 # ----------------------------------------
-# ACDS 17.1 590 win32 2025.04.04.09:22:37
+# ACDS 17.1 590 win32 2025.04.04.15:16:15
 # ----------------------------------------
 # initialize variables
-TOP_LEVEL_NAME="clockx2_pll"
+TOP_LEVEL_NAME="T2_clock"
 QSYS_SIMDIR="./../../"
 QUARTUS_INSTALL_DIR="C:/intelfpga/17.1/quartus/"
 SKIP_FILE_COPY=0
@@ -182,7 +182,7 @@ fi
 # ----------------------------------------
 # compile design files in correct order
 if [ $SKIP_COM -eq 0 ]; then
-  vhdlan -xlrm $USER_DEFINED_VHDL_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS "$QSYS_SIMDIR/clockx2_pll.vho"
+  vhdlan -xlrm $USER_DEFINED_VHDL_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS "$QSYS_SIMDIR/T2_clock.vho"
 fi
 
 # ----------------------------------------

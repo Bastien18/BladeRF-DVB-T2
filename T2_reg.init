@@ -1,0 +1,58 @@
+
+# PLP ID is 0
+v_config.cpu_setup_commands(0) := cpu_command("16#00008010#", "16#00000000#");
+# ISSY counter reset | enable rate adaptation |  automatic TS packet re-sync in the event of a synchronisation error/failure
+v_config.cpu_setup_commands(1) := cpu_command("16#00008000#", "16#00000428#");
+# CCM single transport
+v_config.cpu_setup_commands(2) := cpu_command("16#00008008#", "16#000000f0#");
+# Software reset and auto L1-POST frame index increment | 8MHz
+v_config.cpu_setup_commands(3) := cpu_command("16#00000008#", "16#00000043#");
+# Page 3 selected in QDR memory
+v_config.cpu_setup_commands(4) := cpu_command("16#00000024#", "16#00000030#");
+
+...
+
+# auto L1-POST frame index increment | 8MHz
+v_config.cpu_setup_commands(2053) := cpu_command("16#00000008#", "16#00000042#");
+
+...
+
+# end of L1 frame flag and ISSY counter reset | enable rate adaptation |  automatic TS packet re-sync in the event of a synchronisation error/failure
+v_config.cpu_setup_commands(2076) := cpu_command("16#00008000#", "16#00000429#");
+
+
+# Start of TITL configuration
+
+# L1PRE address is 0x0008
+v_config.cpu_setup_commands(2054) := cpu_command("16#000c0000#", "16#00000008#");
+# L1POST address is 0x0020
+v_config.cpu_setup_commands(2055) := cpu_command("16#000c0004#", "16#00000020#");
+
+# Type => TransportStream 0x00 | Normal carrier mode activated 0b0 | S1 = 0b000 | S2 = 0b0000 | Dynamic signaling shall not be provided for next frame 0b0 | Guard interval 1/32 0b000 | PAPR reduction disabled 0x0 | BPSK 0b0000 | Code rate = 1/2 0b00 | LDPC = 16K 0b00
+v_config.cpu_setup_commands(2056) := cpu_command("16#000c0008#", "16#00000000#");
+# L1 post size = 2^2 * 2^4 * 2^2 = 256 OFDM Cells 0b0000 0000 0100 0000 00 | L1 post info size = 0x13e = 318
+v_config.cpu_setup_commands(2057) := cpu_command("16#000c000c#", "16#00400013#");
+# L1 post info size = 0x13e = 318  | PP4 0b0011 | No transmitter identification 0x00 | No CELL ID provision foreseen 0x0000
+v_config.cpu_setup_commands(2058) := cpu_command("16#000c0010#", "16#e3000000#");
+# Network ID = 0x0000 | T2 System ID = 0x0000
+v_config.cpu_setup_commands(2059) := cpu_command("16#000c0014#", "16#00000000#");
+# 2 Frame per super frame 0x02 | 7 OFDM symbols per T2-Frame 0x007 | No T2 regenerated 0b000 | No extension field in L1POST 0b0 | 1 Frequency in the current T2 system 0b001 | TFS not supported 0b000
+v_config.cpu_setup_commands(2060) := cpu_command("16#000c0018#", "16#02007020#");
+v_config.cpu_setup_commands(2061) := cpu_command("16#000c001c#", "16#00000000#");
+
+# No type 2 PLPs 0b0000 0000 0000 001 | 1 PLPs carried within the current super frame 0b0 0000 001 | Reserved for future use 0b0 0000 000
+v_config.cpu_setup_commands(2062) := cpu_command("16#000c0020#", "16#00020200#");
+v_config.cpu_setup_commands(2063) := cpu_command("16#000c0024#", "16#00ae017d#");
+v_config.cpu_setup_commands(2064) := cpu_command("16#000c0028#", "16#d4008c00#");
+v_config.cpu_setup_commands(2065) := cpu_command("16#000c002c#", "16#006b8030#");
+v_config.cpu_setup_commands(2066) := cpu_command("16#000c0030#", "16#08080000#");
+v_config.cpu_setup_commands(2067) := cpu_command("16#000c0034#", "16#00000000#");
+v_config.cpu_setup_commands(2068) := cpu_command("16#000c0038#", "16#00000000#");
+v_config.cpu_setup_commands(2069) := cpu_command("16#000c003c#", "16#00000000#");
+v_config.cpu_setup_commands(2070) := cpu_command("16#000c0040#", "16#00000000#");
+v_config.cpu_setup_commands(2071) := cpu_command("16#000c0044#", "16#00180000#");
+v_config.cpu_setup_commands(2072) := cpu_command("16#000c0048#", "16#cdcdcdcd#");
+v_config.cpu_setup_commands(2073) := cpu_command("16#000c004c#", "16#cdcdcdcd#");
+v_config.cpu_setup_commands(2074) := cpu_command("16#000c0050#", "16#cdcdcdcd#");
+v_config.cpu_setup_commands(2075) := cpu_command("16#000c0054#", "16#cdcdcdcd#");
+v_config.cpu_setup_commands(2076) := cpu_command("16#00008000#", "16#00000429#");
