@@ -160,18 +160,28 @@ architecture dvbt2_bladerf of bladerf is
     signal adc_streams_last_v     : std_logic_vector(adc_controls'range)  := (others => '0');
 
     -- DVB-T2 internal signal
-    signal baseband_i_s           : std_logic_vector(13 downto 0);
-    signal baseband_q_s           : std_logic_vector(13 downto 0);
+    signal baseband_pres_i_s, baseband_fut_i_s           : std_logic_vector(13 downto 0);
+    signal baseband_pres_q_s, baseband_fut_q_s           : std_logic_vector(13 downto 0);
+    --signal baseband_i_s           : std_logic_vector(15 downto 0);
+    --signal baseband_q_s           : std_logic_vector(15 downto 0);
     signal baseband_valid_s       : std_logic;
 
-    signal byte_count             : unsigned(7 DOWNTO 0); 
+    signal byte_count               : unsigned(7 DOWNTO 0); 
     signal ts_data_s                : std_logic_vector(7 DOWNTO 0); 
     signal ts_data_valid_s          : std_logic; 
     signal ts_data_refclk_s         : std_logic;
-    signal ts_busy_s           : std_logic;
+    signal ts_busy_s                : std_logic;
+    signal ts_data_clock_s          : std_logic;
     
     signal t2_clock_s             : std_logic;
     signal clockx2_s              : std_logic;
+
+    signal counter_i_s            : unsigned(15 downto 0);
+    signal counter_q_s            : unsigned(15 downto 0);
+
+    signal resampler_counter_s       : unsigned(3 downto 0);
+
+    signal wreq_counter_s           : unsigned(31 downto 0);
 
     -- blockRAM internal signal                    
     signal ram_cs_s                : STD_LOGIC;                      
@@ -191,7 +201,6 @@ architecture dvbt2_bladerf of bladerf is
     signal clk_out_200MHz_s   : std_logic;
 
     signal   ps_sync              : std_logic_vector(0 downto 0)          := (others => '0');
-
 
     signal tx_packet_control      : packet_control_t ;
     signal rx_packet_control      : packet_control_t := PACKET_CONTROL_DEFAULT ;
@@ -290,20 +299,22 @@ begin
     -- T2 core clock
     U_T2_clock : component T2_clock
         port map(
-            refclk   => fx3_pclk,
-            rst      => fx3_pclk_pll_reset,
+            refclk   => c5_clock2,
+            rst      => sys_pll_reset,
             outclk_0 => T2_clock_s,
+            outclk_1 => clockx2_s,
+            outclk_2 => ts_data_clock_s,
             locked   => open
         );
 
     -- Clock_x2 for internal OSG RAM in DVB-T2_mod
-    U_clockx2_pll : component clockx2_pll
+    /*U_clockx2_pll : component clockx2_pll
         port map (
             refclk   => fx3_pclk, --  refclk.clk
             rst      => fx3_pclk_pll_reset, --   reset.reset
             outclk_0 => clockx2_s,        -- outclk0.clk
             locked   => open         --  locked.export
-        );
+        );*/
 
 
     -- ========================================================================
@@ -554,7 +565,10 @@ begin
     led(3) <= rx_overflow_led   when nios_gpio.o.led_mode = '0' else not nios_gpio.o.leds(3);
 
     -- Mini exp1
-    --mini_exp1 <= fx3_pclk_pll;
+    --mini_exp1 <= tx_sample_fifo.rreq;
+    --mini_exp2 <= tx_sample_fifo.wreq;
+    mini_exp1 <= baseband_pres_i_s(0);
+    mini_exp2 <= baseband_pres_q_s(0);
 
     -- DAC SPI (data latched on falling edge)
     dac_sclk <= not nios_sclk when nios_gpio.o.adf_chip_enable = '0' else '0';
@@ -601,9 +615,9 @@ begin
     -- TX Submodule
     -- ###################
     -- TX sample fifo
-    tx_sample_fifo.aclr <= fx3_pclk_pll_reset ;
+    tx_sample_fifo.aclr <= sys_pll_reset ;
     tx_sample_fifo.wclock <= fx3_pclk_pll ;
-    tx_sample_fifo.rclock <= fx3_pclk_pll ;
+    tx_sample_fifo.rclock <= t2_clock_s ;
     U_tx_sample_fifo : entity work.tx_fifo
       generic map (
         LPM_NUMWORDS        => TX_FIFO_LENGTH
@@ -623,6 +637,17 @@ begin
         wrfull              => tx_sample_fifo.wfull,
         wrusedw             => tx_sample_fifo.wused
       );
+
+    --------------------------------------------------
+    -- Count the number of write request
+    /*process (tx_sample_fifo.wreq, sys_pll_reset) begin
+        if sys_pll_reset = '1' then 
+            wreq_counter_s <= (others => '0');
+        elsif rising_edge(tx_sample_fifo.wreq) then
+            wreq_counter_s <= wreq_counter_s + 1;
+        end if;
+    end process;*/
+    --------------------------------------------------
 
     /*U_fifo2ts : component fifo2ts
     port map(
@@ -646,8 +671,8 @@ begin
         META_FIFO_DATA_WIDTH  => tx_meta_fifo.rdata'length
     )
     port map (
-        clock               =>  fx3_pclk_pll,
-        reset               =>  fx3_pclk_pll_reset,
+        clock               =>  ts_data_refclk_s,
+        reset               =>  sys_pll_reset,
         enable              =>  tx_enable,
 
         usb_speed           =>  usb_speed_tx,
@@ -684,10 +709,10 @@ begin
 
     U_dvb_t2_modulator : entity work.DVBT2_mod
         port map(
-            clock            => fx3_pclk_pll,               -- fx3_pclk_pll is 100MHz clock
+            clock            => t2_clock_s,               -- fx3_pclk_pll is 100MHz clock
             clock_x2         => clockx2_s,                            -- Internal OSG RAM clock 200MHz
-            clock_rif        => t2_clock_s,                           -- Dual clock for output RF
-            reset_n          => not fx3_pclk_pll_reset,               --       Invert tx_reset to match reset_n
+           --clock_rif        => t2_clock_s,                           -- Dual clock for output RF
+            reset_n          => not sys_pll_reset,               --       Invert tx_reset to match reset_n
             -- Reg is unused for now
             reg_address      => (others => '0'),        --  avalon_slave.address
             reg_wr_data      => (others => '0'),        --              .writedata
@@ -702,7 +727,7 @@ begin
             --ts_data          => ts_data_s,          --              .data
             --ts_data_refclk   => ts_data_refclk_s,                   --              .data_refclk
             --ts_data_busy     => open,                   --              .data_busy
-            ts_data_clk      => fx3_pclk_pll,               --        TS_Clk.clk see if tx_clock works
+            ts_data_clk      => ts_data_clock_s,               --        TS_Clk.clk see if tx_clock works
             ts_data_valid    => ts_data_valid_s,                    --            TS.data_valid
             ts_data          => ts_data_s,          --              .data
             ts_data_refclk   => ts_data_refclk_s,                   --              .data_refclk
@@ -721,9 +746,12 @@ begin
             ram_available    => ram_available_s,                    --              .available
             ram_empty        => ram_empty_s,                    --              .empty
             -- Baseband output
-            baseband_i       => baseband_i_s,           --      Baseband.i
-            baseband_q       => baseband_q_s,           --              .q
+            baseband_i       => baseband_fut_i_s,           --      Baseband.i
+            baseband_q       => baseband_fut_q_s,           --              .q
             baseband_valid   => baseband_valid_s        --              .valid
+            --baseband_i       => open,           --      Baseband.i
+            --baseband_q       => open,           --              .q
+            --baseband_valid   => open        --              .valid
         );
 
     dac_assignment_proc : process( all )
@@ -735,8 +763,10 @@ begin
                                         mimo_tx_enables(i);
 
             if (rising_edge(tx_clock) and baseband_valid_s = '1') then
-                ad9361.ch(i).dac.i.data  <= std_logic_vector(baseband_i_s & "00");
-                ad9361.ch(i).dac.q.data  <= std_logic_vector(baseband_q_s & "00");
+                ad9361.ch(i).dac.i.data  <= std_logic_vector(resize(signed(baseband_pres_i_s), 16) sll 2);
+                ad9361.ch(i).dac.q.data  <= std_logic_vector(resize(signed(baseband_pres_q_s), 16) sll 2);
+                --ad9361.ch(i).dac.i.data  <= std_logic_vector(baseband_i_s);
+                --ad9361.ch(i).dac.q.data  <= std_logic_vector(baseband_q_s);
             end if;
         end loop;
     end process;
@@ -744,7 +774,7 @@ begin
     -- Internal blockRAM
     U_blockRAM : entity work.blockRAM
     port map(
-        cms0041_clock      => fx3_pclk_pll,
+        cms0041_clock      => t2_clock_s,
         ram_cs             => ram_cs_s,
         ram_burst_access   => ram_burst_access_s,
         ram_burst_size     => ram_burst_size_s,
@@ -758,6 +788,52 @@ begin
         ram_available      => ram_available_s,
         ram_empty          => ram_empty_s
     );
+
+    ----------------------------------------------------------------------------------------
+    -- Resample baseband I/Q output of DVBT2_mod
+    --
+    dvbt2_mod_resampler : process (t2_clock_s, sys_pll_reset)
+    begin
+        if sys_pll_reset = '1' then 
+            resampler_counter_s <= (others => '0');
+            baseband_pres_i_s <= (others => '0');
+            baseband_pres_q_s <= (others => '0');
+
+        elsif rising_edge(t2_clock_s) then 
+            if resampler_counter_s = "0011" then 
+                resampler_counter_s <= "0000";
+
+            else
+                resampler_counter_s <= resampler_counter_s + 1;
+                if resampler_counter_s = "0000" then
+                    baseband_pres_i_s <= baseband_fut_i_s;
+                    baseband_pres_q_s <= baseband_fut_q_s;
+
+                end if;
+    
+            end if;
+        end if;
+    end process;
+    ----------------------------------------------------------------------------------------  
+
+    ---------------------------------------------------------------------------------------- 
+    -- Generate I/Q sawtooth signal with 90 degres phase offset
+    --
+    /*sawtooth_gen : process (t2_clock_s, sys_pll_reset)
+    begin
+        if sys_pll_reset = '1' then 
+            counter_i_s <= (others => '0');
+            counter_q_s <= (others => '0');
+        elsif rising_edge(t2_clock_s) then 
+            counter_i_s <= counter_i_s + 1;
+            counter_q_s <= counter_i_s - 16384;
+        end if;
+    end process;
+
+    baseband_i_s <= std_logic_vector(counter_i_s);
+    baseband_q_s <= (others => '0');
+    baseband_valid_s <= '1';*/
+    ---------------------------------------------------------------------------------------- 
 
     ---------------------------------------------------------------------------------------- 
     -- Generate the 188-byte TS stream at the exact byte rate required (NULL-packets) 
@@ -886,8 +962,8 @@ begin
             trigger_arm            => rx_trigger_ctl.arm,
             trigger_fire           => rx_trigger_ctl.fire,
             trigger_master         => rx_trigger_ctl.master,
-            trigger_line           => rx_trigger_line,
-            --trigger_line           => 'Z',
+            --trigger_line           => rx_trigger_line,
+            trigger_line           => 'Z',
 
             -- Eightbit mode
             eight_bit_mode_en      => eightbit_en_rx,
@@ -907,8 +983,8 @@ begin
             sample_fifo_rused      => rx_sample_fifo.rused,
 
             -- Mini expansion signals
-            mini_exp               => mini_exp2 & mini_exp1,
-            --mini_exp               => mini_exp2 & 'Z',
+            --mini_exp               => mini_exp2 & mini_exp1,
+            mini_exp               => 'Z' & 'Z',
 
             -- Metadata to host via FX3
             meta_fifo_rclock       => fx3_pclk_pll,

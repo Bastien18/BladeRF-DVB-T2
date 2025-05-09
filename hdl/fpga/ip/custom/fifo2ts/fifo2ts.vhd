@@ -591,14 +591,18 @@ begin
                 fifo_future.state <= TS_WRITE;
 
             when TS_WRITE =>
-                fifo_future.ts_valid <= '1';
-                fifo_future.ts_data  <= fifo_data(((fifo_current.byte_sel+1)*8)-1 downto (fifo_current.byte_sel*8));
-                
-                if fifo_current.byte_sel = 3 then 
+                if ts_busy = '1' then
                     fifo_future.state <= READ_SAMPLES;
                 else
-                    fifo_future.byte_sel <= fifo_current.byte_sel + 1;
-                    fifo_future.state <= TS_WRITE;
+                    fifo_future.ts_valid <= '1';
+                    fifo_future.ts_data  <= fifo_data(((fifo_current.byte_sel+1)*8)-1 downto (fifo_current.byte_sel*8));
+                    
+                    if fifo_current.byte_sel = 3 then 
+                        fifo_future.state <= READ_SAMPLES;
+                    else
+                        fifo_future.byte_sel <= fifo_current.byte_sel + 1;
+                        fifo_future.state <= TS_WRITE;
+                    end if;
                 end if;
 
 

@@ -259,6 +259,45 @@ No real improvement of the shoulders of the signal in the spectrum analyser.
 
 Then, I tried to storing pre-made sample in the OSG RAM od the T2 core and disable the TS interface by setting the force TS NULL packet to '1'. But it didn't change the spectrum shape.
 
+After discussion with Andy (Commsonic guy), he told me the T2 core and DAC must have the same sampling rate and I should get rid of the dual clock domain first to have a less complex problem to debug. 
+
+The DAC on the AD9361 has a max sampling rate of 61.44MHz. This is an issue because in our current configuration the core is set with an 8K FFT size i.e. the min T2 core clock frequ should be 69MHz.
+
+![](./picture/Screenshot%202025-05-01%20092550.png)
+
+Hence, I lower the FFT size to 2K and set a 61MHz T2 core frequency (this would also be the sampling rate on the DAC).
+
+With this I get a better shape:
+
+![](./picture/photo_6050983049295939986_y%20(1).jpg)
+
+Now it looks more like an OFDM shape. However, we still have to figure out how to get rid of the center spike and having more defined shoulders.
+
+After many try we decided to ensure our test setup is correct before trying to change every parameters on the T2 core.
+
+We've recieved signal on the tuner by using gnuradio to source a previously registered iq 64bits complex sample file. Constellation is not very stable but we receive images on the DVB-T2 tuner. 
+
+For this I use gr-bladerf (The docker container=>needs to add docker group to user, add the --device=/dev/bus/usb/_usb bus nbr_/_usb addr nbr_ in the run.sh script) launch everything with sudo.
+
+It is also possible to receive the video signal on the tuner by transmitting via samples via CLI => translate iq 64bit complex sample into iq 16 bits complex sample. Then set the frequ to 634MHz, the bandwidth to 8MHz, the gain to 60 and the samplerate to 9.14MHz.
+
+#### Solution for bad OFDM spectrum
+
+The issue was that the baseband output of the T2 core is 14 bits and the signal going onto the softcore (and then the DAC) is 16 bits. The resizing didn't keep the sign of the sampled I/Q std_logic_vector and this is why I had a DC offset. By concatenate "00" constant to extend the logic_vector, I made every sample going out the T2 with the same sign => create DC offset.
+
+Here is the shape after correction:
+
+![](./picture/797f37c2-8d96-48d9-8203-265575368152.jpg)
+
+After this I still can't get any video signal with the T2 core. I check the modulation of the PLP is set to QSPK and it was the case.
+
+### Things to ask Andy
+
+- Ask Andy if we can configure the resampler
+- Ask Andy about oversampling
+
+- Ask Andy about dual clock domain and safari tools for configuring the core 
+
 
 ### Project follow up (No more relevant)
 

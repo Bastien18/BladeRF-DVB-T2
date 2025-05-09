@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-FILENAME = "./samples/sample1.sc16q11"
+FILENAME = "/home/bpil/dvbt8k.iq"
 
 def save_sc16q11(filename, signal):
     """

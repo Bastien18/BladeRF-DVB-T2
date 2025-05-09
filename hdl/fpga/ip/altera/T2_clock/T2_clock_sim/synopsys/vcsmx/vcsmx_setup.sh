@@ -12,7 +12,7 @@
 # or its authorized distributors. Please refer to the applicable 
 # agreement for further details.
 
-# ACDS 17.1 590 win32 2025.04.04.15:16:15
+# ACDS 17.1 590 win32 2025.05.06.17:40:49
 
 # ----------------------------------------
 # vcsmx - auto-generated simulation script
@@ -107,7 +107,7 @@
 # within the Quartus project, and generate a unified
 # script which supports all the Altera IP within the design.
 # ----------------------------------------
-# ACDS 17.1 590 win32 2025.04.04.15:16:15
+# ACDS 17.1 590 win32 2025.05.06.17:40:49
 # ----------------------------------------
 # initialize variables
 TOP_LEVEL_NAME="T2_clock"
