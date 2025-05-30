@@ -175,6 +175,7 @@ architecture dvbt2_bladerf of bladerf is
     
     signal t2_clock_s             : std_logic;
     signal clockx2_s              : std_logic;
+    signal dac_clock_s            : std_logic;
 
     signal counter_i_s            : unsigned(15 downto 0);
     signal counter_q_s            : unsigned(15 downto 0);
@@ -182,6 +183,41 @@ architecture dvbt2_bladerf of bladerf is
     signal resampler_counter_s       : unsigned(3 downto 0);
 
     signal wreq_counter_s           : unsigned(31 downto 0);
+
+    signal tick_s   : std_logic;
+
+    signal t2_frame_counter_s       : unsigned(3 downto 0);
+    signal dac_frame_s              : std_logic;
+    signal dac_data_s               : std_logic_vector(5 downto 0);
+    signal i_12bits_s               : std_logic_vector(11 downto 0);
+    signal q_12bits_s               : std_logic_vector(11 downto 0);
+
+    type reg_state_t is (
+        IDLE,
+        READ_REQ,
+        DATA
+    );
+
+    type reg_fsm_t is record
+        state           : reg_state_t;
+        reg_chip_en     : std_logic;
+        reg_wr_en       : std_logic;
+        reg_address     : std_logic_vector(19 downto 0);
+        reg_rd_data     : std_logic_vector(31 downto 0);
+    end record;
+
+    constant REG_FSM_RESET_VALUE : reg_fsm_t := (
+        state       => IDLE,
+        reg_chip_en => '0',
+        reg_wr_en   => '0',
+        reg_address => x"08004",
+        reg_rd_data => (others => '0')
+    );
+
+    signal reg_fsm_future   : reg_fsm_t := REG_FSM_RESET_VALUE;
+    signal reg_fsm_current  : reg_fsm_t := REG_FSM_RESET_VALUE;
+    signal reg_cmd_ack_s    : std_logic;
+    signal reg_rd_data_s    : std_logic_vector(31 downto 0);
 
     -- blockRAM internal signal                    
     signal ram_cs_s                : STD_LOGIC;                      
@@ -304,6 +340,7 @@ begin
             outclk_0 => T2_clock_s,
             outclk_1 => clockx2_s,
             outclk_2 => ts_data_clock_s,
+            outclk_3 => dac_clock_s,
             locked   => open
         );
 
@@ -454,10 +491,13 @@ begin
             ad9361_device_if_rx_data_in_p   => adi_rx_data,
             ad9361_device_if_rx_data_in_n   => (others => '0'),
             ad9361_device_if_tx_clk_out_p   => adi_tx_clock,
+            --ad9361_device_if_tx_clk_out_p   => open,
             ad9361_device_if_tx_clk_out_n   => open,
             ad9361_device_if_tx_frame_out_p => adi_tx_frame,
+            --ad9361_device_if_tx_frame_out_p => open,
             ad9361_device_if_tx_frame_out_n => open,
             ad9361_device_if_tx_data_out_p  => adi_tx_data,
+            --ad9361_device_if_tx_data_out_p  => open,
             ad9361_device_if_tx_data_out_n  => open,
             ad9361_adc_i0_enable            => ad9361.ch(0).adc.i.enable, -- out sl
             ad9361_adc_i0_valid             => ad9361.ch(0).adc.i.valid,  -- out sl
@@ -567,8 +607,8 @@ begin
     -- Mini exp1
     --mini_exp1 <= tx_sample_fifo.rreq;
     --mini_exp2 <= tx_sample_fifo.wreq;
-    mini_exp1 <= baseband_pres_i_s(0);
-    mini_exp2 <= baseband_pres_q_s(0);
+    --mini_exp1 <= tick_s;
+    --mini_exp2 <= t2_clock_s;
 
     -- DAC SPI (data latched on falling edge)
     dac_sclk <= not nios_sclk when nios_gpio.o.adf_chip_enable = '0' else '0';
@@ -671,7 +711,8 @@ begin
         META_FIFO_DATA_WIDTH  => tx_meta_fifo.rdata'length
     )
     port map (
-        clock               =>  ts_data_refclk_s,
+        fifo_clock          =>  t2_clock_s,
+        ts_clock            =>  ts_data_refclk_s,
         reset               =>  sys_pll_reset,
         enable              =>  tx_enable,
 
@@ -714,12 +755,12 @@ begin
            --clock_rif        => t2_clock_s,                           -- Dual clock for output RF
             reset_n          => not sys_pll_reset,               --       Invert tx_reset to match reset_n
             -- Reg is unused for now
-            reg_address      => (others => '0'),        --  avalon_slave.address
+            reg_address      => reg_fsm_current.reg_address,        --  avalon_slave.address
             reg_wr_data      => (others => '0'),        --              .writedata
-            reg_wr_en        => '0',                    --              .write
-            reg_chip_en      => '0',                    --              .chipselect
-            reg_rd_data      => open,                   --              .readdata
-            reg_cmd_ack      => open,                   --              .waitrequest_n
+            reg_wr_en        => reg_fsm_current.reg_wr_en,                    --              .write
+            reg_chip_en      => reg_fsm_current.reg_chip_en,                    --              .chipselect
+            reg_rd_data      => reg_rd_data_s,                   --              .readdata
+            reg_cmd_ack      => reg_cmd_ack_s,                   --              .waitrequest_n
             reg_irq          => open,                   --           irq.irq
             -- Transport stream
             --ts_data_clk      => fx3_pclk_pll,               --        TS_Clk.clk see if tx_clock works
@@ -727,7 +768,7 @@ begin
             --ts_data          => ts_data_s,          --              .data
             --ts_data_refclk   => ts_data_refclk_s,                   --              .data_refclk
             --ts_data_busy     => open,                   --              .data_busy
-            ts_data_clk      => ts_data_clock_s,               --        TS_Clk.clk see if tx_clock works
+            ts_data_clk      => ts_data_refclk_s,               --        TS_Clk.clk see if tx_clock works
             ts_data_valid    => ts_data_valid_s,                    --            TS.data_valid
             ts_data          => ts_data_s,          --              .data
             ts_data_refclk   => ts_data_refclk_s,                   --              .data_refclk
@@ -749,6 +790,8 @@ begin
             baseband_i       => baseband_fut_i_s,           --      Baseband.i
             baseband_q       => baseband_fut_q_s,           --              .q
             baseband_valid   => baseband_valid_s        --              .valid
+            --dac_data_i       => baseband_fut_i_s,
+            --dac_data_q       => baseband_fut_q_s
             --baseband_i       => open,           --      Baseband.i
             --baseband_q       => open,           --              .q
             --baseband_valid   => open        --              .valid
@@ -762,9 +805,9 @@ begin
             dac_controls(i).data_req <= (ad9361.ch(i).dac.i.valid  or ad9361.ch(i).dac.q.valid  or tx_loopback_enabled) and
                                         mimo_tx_enables(i);
 
-            if (rising_edge(tx_clock) and baseband_valid_s = '1') then
-                ad9361.ch(i).dac.i.data  <= std_logic_vector(resize(signed(baseband_pres_i_s), 16) sll 2);
-                ad9361.ch(i).dac.q.data  <= std_logic_vector(resize(signed(baseband_pres_q_s), 16) sll 2);
+            if (rising_edge(t2_clock_s) and baseband_valid_s = '1') then
+                ad9361.ch(i).dac.i.data  <= std_logic_vector(shift_left(resize(signed(baseband_pres_i_s), 16), 2));
+                ad9361.ch(i).dac.q.data  <= std_logic_vector(shift_left(resize(signed(baseband_pres_q_s), 16), 2));
                 --ad9361.ch(i).dac.i.data  <= std_logic_vector(baseband_i_s);
                 --ad9361.ch(i).dac.q.data  <= std_logic_vector(baseband_q_s);
             end if;
@@ -800,7 +843,7 @@ begin
             baseband_pres_q_s <= (others => '0');
 
         elsif rising_edge(t2_clock_s) then 
-            if resampler_counter_s = "0011" then 
+            if resampler_counter_s = "0111" then 
                 resampler_counter_s <= "0000";
 
             else
@@ -808,13 +851,92 @@ begin
                 if resampler_counter_s = "0000" then
                     baseband_pres_i_s <= baseband_fut_i_s;
                     baseband_pres_q_s <= baseband_fut_q_s;
-
+                    tick_s <= not(tick_s);
                 end if;
     
             end if;
         end if;
     end process;
-    ----------------------------------------------------------------------------------------  
+    ----------------------------------------------------------------------------------------
+    
+    ---------------------------------------------------------------------------------------- 
+    -- Probe register 0x8004 of T2 core (Stream0Status)
+    read_stream0status_sync : process (t2_clock_s, sys_pll_reset)
+    begin
+        if sys_pll_reset = '1' then 
+            reg_fsm_current <= REG_FSM_RESET_VALUE;
+        elsif rising_edge(t2_clock_s)then
+            reg_fsm_current <= reg_fsm_future;
+        end if;
+    end process;
+
+    read_stream0status_comb : process (all)
+    begin
+        reg_fsm_future <= REG_FSM_RESET_VALUE;
+
+        case reg_fsm_current.state is 
+            when IDLE =>
+                reg_fsm_future.state <= READ_REQ;
+
+            when READ_REQ =>
+                reg_fsm_future.reg_chip_en <= '1';
+                if reg_cmd_ack_s = '0' then 
+                    reg_fsm_future.state <= READ_REQ;
+                else
+                    reg_fsm_future.state <= DATA;
+                end if;
+
+            when DATA =>
+                reg_fsm_future.reg_chip_en <= '0';
+                reg_fsm_future.reg_rd_data <= reg_rd_data_s;
+            when others =>
+                reg_fsm_future <= REG_FSM_RESET_VALUE;
+        end case;
+    end process;
+    ---------------------------------------------------------------------------------------- 
+    
+    -- Scaling down baseband I/Q to 12bits
+    /*i_12bits_s <= std_logic_vector(resize(shift_right(signed(baseband_pres_i_s), 2), 12));
+    q_12bits_s <= std_logic_vector(resize(shift_right(signed(baseband_pres_q_s), 2), 12));*/
+
+    ----------------------------------------------------------------------------------------
+    -- Interface I/Q output from dvbt2 to the ad9361
+    --
+    /*dvbt2_to_dac : process (dac_clock_s, sys_pll_reset)
+    begin
+        if sys_pll_reset = '1' then 
+            t2_frame_counter_s  <= (others => '0');
+            dac_frame_s         <= '0';
+            dac_data_s          <= (others => '0');
+        elsif rising_edge(dac_clock_s) then 
+            t2_frame_counter_s <= t2_frame_counter_s + 1;
+            case t2_frame_counter_s is
+                when "0011" =>
+                    t2_frame_counter_s  <= "0000";
+                    dac_frame_s         <= '0';
+                    dac_data_s          <= q_12bits_s(5 downto 0);
+                when "0010" =>
+                    dac_frame_s         <= '0';
+                    dac_data_s          <= i_12bits_s(5 downto 0);
+                when "0001" =>
+                    dac_frame_s         <= '1';
+                    dac_data_s          <= q_12bits_s(11 downto 6);
+                when "0000" => 
+                    dac_frame_s         <= '1';
+                    dac_data_s          <= i_12bits_s(11 downto 6);
+                when others =>
+                    t2_frame_counter_s  <= (others => '0');
+                    dac_frame_s         <= '0';
+                    dac_data_s          <= (others => '0');
+            end case;
+        end if;
+    end process;*/
+    ---------------------------------------------------------------------------------------- 
+
+    -- Relink AD9361 tx frame, clock and data
+    --adi_tx_clock <= dac_clock_s;
+    --adi_tx_frame <= dac_frame_s;
+    --adi_tx_data  <= dac_data_s;
 
     ---------------------------------------------------------------------------------------- 
     -- Generate I/Q sawtooth signal with 90 degres phase offset
@@ -962,8 +1084,8 @@ begin
             trigger_arm            => rx_trigger_ctl.arm,
             trigger_fire           => rx_trigger_ctl.fire,
             trigger_master         => rx_trigger_ctl.master,
-            --trigger_line           => rx_trigger_line,
-            trigger_line           => 'Z',
+            trigger_line           => rx_trigger_line,
+            --trigger_line           => 'Z',
 
             -- Eightbit mode
             eight_bit_mode_en      => eightbit_en_rx,
@@ -983,8 +1105,8 @@ begin
             sample_fifo_rused      => rx_sample_fifo.rused,
 
             -- Mini expansion signals
-            --mini_exp               => mini_exp2 & mini_exp1,
-            mini_exp               => 'Z' & 'Z',
+            mini_exp               => mini_exp2 & mini_exp1,
+            --mini_exp               => 'Z' & 'Z',
 
             -- Metadata to host via FX3
             meta_fifo_rclock       => fx3_pclk_pll,

@@ -2092,9 +2092,9 @@ PACKAGE BODY cms0041_config IS
     v_config.cpu_setup_commands(2053) := cpu_command("16#00000008#", "16#00000042#");
     v_config.cpu_setup_commands(2054) := cpu_command("16#000c0000#", "16#00000008#");
     v_config.cpu_setup_commands(2055) := cpu_command("16#000c0004#", "16#00000020#");
-    v_config.cpu_setup_commands(2056) := cpu_command("16#000c0008#", "16#00000000#");
+    v_config.cpu_setup_commands(2056) := cpu_command("16#000c0008#", "16#00003030#");
     v_config.cpu_setup_commands(2057) := cpu_command("16#000c000c#", "16#00400013#");
-    v_config.cpu_setup_commands(2058) := cpu_command("16#000c0010#", "16#e3000000#");
+    v_config.cpu_setup_commands(2058) := cpu_command("16#000c0010#", "16#e0000000#");
     v_config.cpu_setup_commands(2059) := cpu_command("16#000c0014#", "16#00000000#");
     v_config.cpu_setup_commands(2060) := cpu_command("16#000c0018#", "16#02007020#");
     v_config.cpu_setup_commands(2061) := cpu_command("16#000c001c#", "16#00000000#");
@@ -2136,5 +2136,3 @@ PACKAGE BODY cms0041_config IS
     
   END user_cms0041_config;
 END cms0041_config;
-
- 

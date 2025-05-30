@@ -291,12 +291,24 @@ Here is the shape after correction:
 
 After this I still can't get any video signal with the T2 core. I check the modulation of the PLP is set to QSPK and it was the case.
 
-### Things to ask Andy
+### Things to do
 
 - Ask Andy if we can configure the resampler
 - Ask Andy about oversampling
 
 - Ask Andy about dual clock domain and safari tools for configuring the core 
+
+- Ask Andy for cms0041_config.vhd
+- Try with custom incrementing TS file
+- Try to see if changing QPSK to 16QAM raise the refclk on ts interface
+- Try if we see preamble with crazy scan thing
+
+- Output resampler tick on exp1 and measure accurate frequency
+- Bypass softcore and check 2complement/binary offset between T2, softcore and AD9361
+- Understand the NIOS data streaming
+- Log data into some flash memory
+
+
 
 
 ### Project follow up (No more relevant)

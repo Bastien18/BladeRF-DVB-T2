@@ -25,7 +25,8 @@ entity fifo2ts is
         META_FIFO_DATA_WIDTH  : natural                 := 128
     );
     port(
-        clock                 : in std_logic;                                     
+        fifo_clock            : in std_logic;  
+        ts_clock              : in std_logic;                                   
         reset                 : in std_logic;
         enable              : in std_logic;
 
@@ -116,8 +117,12 @@ constant DMA_BUF_SIZE_SS    : natural   := 512;
         READ_SAMPLES,
         READ_THROTTLE,
         READ_HOLDOFF,
-        TS_WRITE,
-        WAIT_FIFO_DATA
+        WAIT_WRITE
+    );
+
+    type ts_state_t is (
+        WAIT_WREQ,
+        TS_WRITE
     );
 
     type ch_offsets_t is array( natural range <> ) of natural range fifo_data'low to fifo_data'high;
@@ -136,6 +141,10 @@ constant DMA_BUF_SIZE_SS    : natural   := 512;
         fifo_read           : std_logic;
         out_samples         : std_logic_vector(FIFO_DATA_WIDTH-1 downto 0);
         eight_bit_sample_sel: std_logic;
+    end record;
+
+    type ts_fsm_t is record 
+        state               : ts_state_t;
         byte_sel            : integer range 0 to (FIFO_DATA_WIDTH/8)-1;
         ts_valid            : std_logic;
         ts_data             : std_logic_vector(ts_data'range);
@@ -154,23 +163,33 @@ constant DMA_BUF_SIZE_SS    : natural   := 512;
         packet_data_cache   => (others => '0'),
         fifo_read           => '0',
         out_samples         => (others => '0'),
-        eight_bit_sample_sel => '0',
-        byte_sel            => 0,
-        ts_valid            => '0',
-        ts_data             => (others => '0')
+        eight_bit_sample_sel => '0'
+    );
+
+    constant TS_FSM_RESET_VALUE : ts_fsm_t := (
+        state       => WAIT_WREQ,
+        byte_sel    => 0,            
+        ts_valid    => '0',   
+        ts_data     => (others => '0') 
     );
 
     signal fifo_current : fifo_fsm_t := FIFO_FSM_RESET_VALUE;
     signal fifo_future  : fifo_fsm_t := FIFO_FSM_RESET_VALUE;
 
+    signal ts_current   : ts_fsm_t  := TS_FSM_RESET_VALUE;
+    signal ts_future    : ts_fsm_t  := TS_FSM_RESET_VALUE;
+
+    signal ts_wreq_s    : std_logic;
+    signal ts_wack_s    : std_logic;
+
 begin
 
     -- Determine the DMA buffer size based on USB speed
-    calc_buf_size : process( clock, reset )
+    calc_buf_size : process( fifo_clock, reset )
     begin
         if( reset = '1' ) then
             dma_buf_size <= DMA_BUF_SIZE_SS;
-        elsif( rising_edge(clock) ) then
+        elsif( rising_edge(fifo_clock) ) then
             if( usb_speed = '0' ) then
                 dma_buf_size <= DMA_BUF_SIZE_SS;
             else
@@ -185,11 +204,11 @@ begin
     -- ------------------------------------------------------------------------
 
     -- Meta FIFO synchronous process
-    meta_fsm_sync : process( clock, reset )
+    meta_fsm_sync : process( fifo_clock, reset )
     begin
         if( reset = '1' ) then
             meta_current <= META_FSM_RESET_VALUE;
-        elsif( rising_edge(clock) ) then
+        elsif( rising_edge(fifo_clock) ) then
             meta_current <= meta_future;
         end if;
     end process;
@@ -303,147 +322,57 @@ begin
     -- ------------------------------------------------------------------------
 
     -- Sample FIFO synchronous process
-    fifo_fsm_sync : process( clock, reset )
+    fifo_fsm_sync : process( fifo_clock, reset )
     begin
         if( reset = '1' ) then
             fifo_current <= FIFO_FSM_RESET_VALUE;
-        elsif( rising_edge(clock) ) then
+        elsif( rising_edge(fifo_clock) ) then
             fifo_current <= fifo_future;
         end if;
     end process;
 
+    -- TS sample synchronous process
+    ts_fsm_sync : process (ts_clock, reset)
+    begin
+        if(reset = '1') then 
+            ts_current <= TS_FSM_RESET_VALUE;
+        elsif(rising_edge(ts_clock)) then
+            ts_current <= ts_future;
+        end if;
+    end process;
+
+    -- TS combinatorial process
+    ts_fsm_com : process(all)
+    begin
+        ts_future <= TS_FSM_RESET_VALUE;
+        ts_wack_s <= '0';
+
+        case ts_current.state is
+            when WAIT_WREQ =>
+                if ts_wreq_s = '1' then
+                    ts_future.state <= TS_WRITE;
+                end if;
+
+            when TS_WRITE =>
+                ts_future.ts_valid <= '1';
+                ts_future.ts_data  <= fifo_data(((ts_current.byte_sel+1)*8)-1 downto (ts_current.byte_sel*8));
+                
+                if ts_current.byte_sel = 3 then 
+                    ts_future.state <= WAIT_WREQ;
+                    ts_wack_s <= '1';
+                else
+                    ts_future.byte_sel <= ts_current.byte_sel + 1;
+                    ts_future.state <= TS_WRITE;
+                end if;
+
+            when others =>
+                ts_future <= TS_FSM_RESET_VALUE;
+        end case;
+
+    end process;
+
     -- Sample FIFO combinatorial process
     fifo_fsm_comb : process( all )
-
-        -- --------------------------------------------------------------------
-        -- MIMO UNPACKER: STEP 1 of 5
-        -- --------------------------------------------------------------------
-        -- The sample FIFO output is a wide data bus that may contain more
-        -- than one sample for a given channel. This function unpacks
-        -- the bus into an array of sample streams. For example, a 2x2 MIMO
-        -- design with 16-bit samples will pack its data into a 64-bit wide
-        -- bus in one of the following ways:
-        --      | 63:48 | 47:32 | 31:16 | 15:0 | Bits
-        --   1. |   Q1  |   I1  |   Q0  |  I0  | Channels 0 & 1 enabled
-        --   2. |   Q0' |   I0' |   Q0  |  I0  | Channel 0 only enabled
-        --   3. |   Q1' |   I1' |   Q1  |  I1  | Channel 1 only enabled
-        -- This function will return an array of length 2. The 0th
-        -- element containing I0/Q0, and the 1st element I1/Q1. It is up
-        -- to the state machine to select between element 0 and 1 based
-        -- on which stream(s) is/are enabled.
-        function unpack( c : sample_controls_t;
-                         d : std_logic_vector ) return sample_streams_t is
-            variable rv          : sample_streams_t(c'range);
-            constant OFFSET_UNIT : natural := rv(rv'low).data_i'length +
-                                              rv(rv'low).data_q'length;
-            -- The following 4 constants are platform-specific and perhaps
-            -- should be parameters instead. This is good enough for now.
-            constant I_HIGH      : natural := 11;
-            constant I_LOW       : natural := 0;
-            constant Q_HIGH      : natural := 27;
-            constant Q_LOW       : natural := 16;
-        begin
-            -- Ensure the array indices are normalized
-            assert (c'low = 0) and (c'high >= c'low)
-                report "Invalid range for parameter 'c'"
-                severity failure;
-
-            for i in rv'range loop
-                rv(i).data_i := resize(signed(shift_right(unsigned(d),i*OFFSET_UNIT)(I_HIGH downto I_LOW)),rv(i).data_i'length);
-                rv(i).data_q := resize(signed(shift_right(unsigned(d),i*OFFSET_UNIT)(Q_HIGH downto Q_LOW)),rv(i).data_q'length);
-                rv(i).data_v := '0';
-            end loop;
-
-            return rv;
-        end function;
-
-        -- --------------------------------------------------------------------
-        -- MIMO UNPACKER: STEP 1 of 5 (8-bit/half band mode)
-        -- --------------------------------------------------------------------
-        -- The sample FIFO output is a wide data bus that may contain more
-        -- than one sample for a given channel. This function unpacks
-        -- the bus into an array of sample streams. For example, a 2x2 MIMO
-        -- design with 8-bit samples will pack its data into a 64-bit wide
-        -- bus in one of the following ways:
-        --      |           Sample 1            |          Sample 0            |
-        --      | 63:56 | 55:48 | 47:40 | 39:32 | 31:24 | 23:16 | 15:8  | 7:0  | Bits
-        --   1. |   Q1  |   I1  |   Q0  |  I0   |   Q1  |   I1  |   Q0  |  I0  | Channels 0 & 1 enabled
-        --   2. |   Q0' |   I0' |   Q0  |  I0   |   Q0' |   I0' |   Q0  |  I0  | Channel 0 only enabled
-        --   3. |   Q1' |   I1' |   Q1  |  I1   |   Q1' |   I1' |   Q1  |  I1  | Channel 1 only enabled
-        --
-        -- Note: This function is meant to be ran twice to retreive both samples on the bus
-        function unpack_eight_bit_mode( c : sample_controls_t;
-                                        d : std_logic_vector;
-                                        sample : std_logic ) return sample_streams_t is
-
-            variable rv : sample_streams_t(c'range);
-            constant OFFSET_UNIT        : natural := 16;
-            constant SAMPLE_OFFSET_UNIT : natural := 2 * OFFSET_UNIT;
-            -- The following 4 constants are platform-specific and perhaps
-            -- should be parameters instead. This is good enough for now.
-            constant I_HIGH  :  natural := 7;
-            constant I_LOW   :  natural := 0;
-            constant Q_HIGH  :  natural := 15;
-            constant Q_LOW   :  natural := 8;
-
-            -- 8bit mode constants
-            constant SIGMA_DELTA_BITS : signed (3 downto 0) := "0000";
-        begin
-            -- Ensure the array indices are normalized
-            assert (c'low = 0) and (c'high >= c'low)
-                report "Invalid range for parameter 'c'"
-                severity failure;
-
-            if (sample = '0') then
-                for i in rv'range loop
-                    rv(i).data_i := shift_left(resize(signed(shift_right(unsigned(d),i*OFFSET_UNIT)(I_HIGH downto I_LOW)), rv(i).data_i'length),4);
-                    rv(i).data_q := shift_left(resize(signed(shift_right(unsigned(d),i*OFFSET_UNIT)(Q_HIGH downto Q_LOW)), rv(i).data_q'length),4);
-                    rv(i).data_v := '0';
-                end loop;
-            elsif (sample = '1') then
-                for i in rv'range loop
-                    rv(i).data_i := shift_left(resize(signed(shift_left(shift_right(unsigned(d),i*OFFSET_UNIT + SAMPLE_OFFSET_UNIT)(I_HIGH downto I_LOW),0)), rv(i).data_i'length),4);
-                    rv(i).data_q := shift_left(resize(signed(shift_left(shift_right(unsigned(d),i*OFFSET_UNIT + SAMPLE_OFFSET_UNIT)(Q_HIGH downto Q_LOW),0)), rv(i).data_q'length),4);
-                    rv(i).data_v := '0';
-                end loop;
-            else
-                report "fifo_reader: Sample choice out of range" severity failure;
-            end if;
-
-            return rv;
-        end function;
-
-        -- --------------------------------------------------------------------
-        -- MIMO UNPACKER: STEP 3 of 5
-        -- --------------------------------------------------------------------
-        -- The FIFO data has been unpacked into an array containing I and Q
-        -- samples for each of the possible channels they belong to. We need to
-        -- figure out which index of this unpacked array belongs to which
-        -- channel so we can output it to the correct endpoint, as follows:
-        --   a. All channel indices start at 0.
-        --   b. For each channel, add 1 to the index for each previous
-        --      channel that is enabled. For 2x2 MIMO:
-        --        ch_enabled | array index of the unpacked data stream
-        --        0 & 1      | ch0 = 0    ; ch1 = 0 + 1 = 1
-        --        0 only     | ch0 = 0    ; ch1 = -     = 0 (ch1 is disabled, doesn't matter)
-        --        1 only     | ch0 = - = 0; ch1 = 0 + 0 = 0 (ch0 is disabled, doesn't matter)
-        function compute_initial_channel_offsets( x : sample_controls_t ) return ch_offsets_t is
-            variable rv : ch_offsets_t(x'range) := (others => 0);
-        begin
-            rv := (others => 0);
-            for i in x'low+1 to x'high loop
-                for j in x'low to x'high-1 loop
-                    if( x(j).enable = '1' ) then
-                        rv(i) := rv(i) + 1;
-                    end if;
-                end loop;
-            end loop;
-            return rv;
-        end function;
-
-                            --variable unpacked : sample_streams_t(out_samples'range);
-                            --variable read_req : std_logic := '0';
-
     begin
 
         fifo_future <= fifo_current;
@@ -452,158 +381,58 @@ begin
         fifo_future.packet_control.pkt_sop <= meta_current.meta_pkt_sop;
 
         fifo_future.packet_control.data_valid <= '0';
-                                -- MIMO UNPACKER: STEP 1 of 5
-                                /*if( eight_bit_mode_en = '1') then
-                                    unpacked := unpack_eight_bit_mode(fifo_current.sample_controls_reg, fifo_data, fifo_current.eight_bit_sample_sel);
-                                else
-                                    unpacked := unpack(fifo_current.sample_controls_reg, fifo_data);
-                                end if;
-
-                                for i in fifo_future.out_samples'range loop
-                                    if( fifo_current.sample_controls_reg(i).enable = '1' ) then
-                                        fifo_future.out_samples(i) <= unpacked(fifo_current.ch_offsets(i) + fifo_current.ch_shift);
-                                    end if;
-                                end loop;*/
         
         fifo_future.out_samples <= fifo_data;
-        fifo_future.ts_valid <= '0';
-        fifo_future.ts_data <= (others => '0');
+        ts_wreq_s <= '0';
 
         case fifo_current.state is
-
-                                /*when COMPUTE_ENABLED_CHANNELS =>
-
-                                    -- MIMO UNPACKER: STEP 2 of 5
-                                    --   Count the number of enabled channels
-                                    fifo_future.enabled_channels <= count_enabled_channels(in_sample_controls);
-
-                                    -- Register the sample control settings
-                                    fifo_future.sample_controls_reg <= in_sample_controls;
-
-                                    fifo_future.state <= COMPUTE_OFFSETS;*/
-
-                                /*when COMPUTE_OFFSETS =>
-
-                                    -- MIMO UNPACKER: STEP 3 of 5
-                                    fifo_future.ch_offsets <= compute_initial_channel_offsets(fifo_current.sample_controls_reg);
-
-                                    -- MIMO UNPACKER: STEP 4 of 5
-                                    --   Compute the number of valid samples that each channel has remaining in fifo_data that
-                                    --   still need to be processed (not including the first). This becomes the number of clock
-                                    --   cycles to wait before asserting the FIFO read request to get a new batch of samples.
-                                    fifo_future.samples_left_init <= NUM_STREAMS - fifo_current.enabled_channels;
-                                    fifo_future.samples_left      <= NUM_STREAMS - fifo_current.enabled_channels;
-
-                                    if( packet_en = '1' ) then
-                                        fifo_future.state <= READ_PACKET;
-                                        fifo_future.samples_left <= NUM_STREAMS - 1;
-                                    else
-                                        fifo_future.state <= READ_SAMPLES;
-                                    end if;*/
-
-                                /* when READ_PACKET =>
-                                    if( meta_current.meta_pkt_eop = '1' and meta_current.skip_padding = '1') then
-                                        fifo_future.samples_left <= NUM_STREAMS - 1;
-                                    end if;
-
-                                    if( fifo_data'high > 31) then
-                                        if( fifo_current.samples_left = 0) then
-                                            fifo_future.packet_control.data <= fifo_current.packet_data_cache;
-                                        elsif( fifo_current.samples_left = 1) then
-                                            fifo_future.packet_control.data <= fifo_data(31 downto 0);
-                                            fifo_future.packet_data_cache   <= fifo_data(63 downto 32);
-                                        end if;
-                                    else
-                                        fifo_future.packet_control.data <= fifo_data(31 downto 0);
-                                    end if;
-
-                                    fifo_future.packet_control.pkt_eop <= '0';
-
-                                    if( meta_current.meta_time_go = '1' and meta_current.dma_downcount > 0 and packet_ready = '1' ) then
-                                        if( meta_current.dma_downcount = 1 ) then
-                                            fifo_future.packet_control.pkt_eop <= '1';
-                                        end if;
-                                        fifo_future.packet_control.data_valid <= '1';
-
-                                        if( fifo_current.samples_left = NUM_STREAMS - 1) then
-                                            fifo_future.fifo_read    <= '1';
-                                        end if;
-
-                                        if( fifo_current.samples_left = 0 ) then
-                                            fifo_future.samples_left <= NUM_STREAMS - 1;
-                                        else
-                                            fifo_future.samples_left <= fifo_current.samples_left - 1;
-                                        end if;
-                                    end if;*/
 
             when READ_SAMPLES =>
 
                 fifo_future.downcount <= FIFO_FSM_RESET_VALUE.downcount;
-                fifo_future.byte_sel  <= FIFO_FSM_RESET_VALUE.byte_sel;
 
                 if( fifo_holdoff = '1' ) then
                     -- Pause for a spell
                     fifo_future.state <= READ_HOLDOFF;
 
-                elsif( fifo_empty = '0' and
-                       (meta_en = '0' or (meta_en = '1' and meta_current.meta_time_go = '1')) and
-                       ts_busy = '0') then
-
-                                    -- Check for valid data request
-                                    /*read_req := '0';
-                                    for i in in_sample_controls'range loop
-                                        read_req := read_req or (in_sample_controls(i).data_req and in_sample_controls(i).enable);
-                                        fifo_future.out_samples(i).data_v <= in_sample_controls(i).data_req and
-                                                                            in_sample_controls(i).enable;
-                                    end loop;*/
-
-                                -- Received a valid data request
-                                --if( read_req = '1' ) then
-
-                                /*if( fifo_current.samples_left = 0 ) then
-                                    fifo_future.samples_left <= fifo_current.samples_left_init;
-                                    fifo_future.ch_shift     <= 0;
-                                    if( eight_bit_mode_en = '1' ) then
-                                        fifo_future.fifo_read <= read_req and fifo_current.eight_bit_sample_sel;
-                                        fifo_future.eight_bit_sample_sel <= not fifo_current.eight_bit_sample_sel;
-                                    else
-                                        fifo_future.fifo_read <= read_req;
-                                    end if;
-                                else
-                                    -- MIMO UNPACKER: STEP 5 of 5
-                                    --   Add the number of enabled channels to each channel's offset index.
-                                    --   This points that channel to the next valid sample in the current fifo_data.
-                                    fifo_future.ch_shift     <= fifo_current.ch_shift + fifo_current.enabled_channels;
-                                    fifo_future.samples_left <= fifo_current.samples_left - 1;
-                                end if;*/
+                elsif( fifo_empty = '0' and (meta_en = '0' or (meta_en = '1' and meta_current.meta_time_go = '1')) and
+                       ts_busy = '0' and ts_wack_s = '0') then
 
                         fifo_future.fifo_read <= '1';
-                        fifo_future.state <= WAIT_FIFO_DATA;
+                        fifo_future.state <= WAIT_WRITE;
 
                         if( FIFO_FSM_RESET_VALUE.downcount /= 0 ) then
                             fifo_future.state <= READ_THROTTLE;
                         end if;
                     end if;
 
-                                    --end if;
+            when WAIT_WRITE =>
+                if ts_busy = '1' then 
+                    fifo_future.state <= READ_SAMPLES;
+                else
+                    ts_wreq_s <= '1';
 
-            when WAIT_FIFO_DATA =>
-                fifo_future.state <= TS_WRITE;
+                    if ts_wack_s = '1' then 
+                        fifo_future.state <= READ_SAMPLES;
+                    else
+                        fifo_future.state <= WAIT_WRITE;
+                    end if;
+                end if;
 
-            when TS_WRITE =>
+            /*when TS_WRITE =>
                 if ts_busy = '1' then
                     fifo_future.state <= READ_SAMPLES;
                 else
-                    fifo_future.ts_valid <= '1';
-                    fifo_future.ts_data  <= fifo_data(((fifo_current.byte_sel+1)*8)-1 downto (fifo_current.byte_sel*8));
+                    ts_future.ts_valid <= '1';
+                    ts_future.ts_data  <= fifo_data(((ts_current.byte_sel+1)*8)-1 downto (ts_current.byte_sel*8));
                     
-                    if fifo_current.byte_sel = 3 then 
+                    if ts_current.byte_sel = 3 then 
                         fifo_future.state <= READ_SAMPLES;
                     else
-                        fifo_future.byte_sel <= fifo_current.byte_sel + 1;
+                        ts_future.byte_sel <= ts_current.byte_sel + 1;
                         fifo_future.state <= TS_WRITE;
                     end if;
-                end if;
+                end if;*/
 
 
             when READ_THROTTLE =>
@@ -645,8 +474,8 @@ begin
         fifo_read   <= fifo_current.fifo_read;
         out_samples <= fifo_current.out_samples;
 
-        ts_data <= fifo_current.ts_data;
-        ts_valid <= fifo_current.ts_valid;
+        ts_data <= ts_current.ts_data;
+        ts_valid <= ts_current.ts_valid;
 
         packet_control <= fifo_current.packet_control;
 
@@ -657,11 +486,11 @@ begin
     -- ------------------------------------------------------------------------
 
     -- Underflow detection
-    detect_underflows : process( clock, reset )
+    detect_underflows : process( fifo_clock, reset )
     begin
         if( reset = '1' ) then
             underflow_detected <= '0';
-        elsif( rising_edge( clock ) ) then
+        elsif( rising_edge( fifo_clock ) ) then
             underflow_detected <= '0';
             if( enable = '1' and fifo_empty = '1' and
                 (meta_en = '0' or (meta_en = '1' and meta_current.meta_time_go = '1')) ) then
@@ -674,13 +503,13 @@ begin
     -- meaning we have an underflow condition, a non-underflow condition, then
     -- another underflow condition counts as 2 underflows, but an underflow condition
     -- followed by N underflow conditions counts as a single underflow condition.
-    count_underflows : process( clock, reset )
+    count_underflows : process( fifo_clock, reset )
         variable prev_underflow : std_logic := '0';
     begin
         if( reset = '1' ) then
             prev_underflow  := '0';
             underflow_count <= (others =>'0');
-        elsif( rising_edge( clock ) ) then
+        elsif( rising_edge( fifo_clock ) ) then
             if( prev_underflow = '0' and underflow_detected = '1' ) then
                 underflow_count <= underflow_count + 1;
             end if;
@@ -691,13 +520,13 @@ begin
     -- Active high assertion for underflow_duration when the underflow
     -- condition has been detected.  The LED will stay asserted
     -- if multiple underflows have occurred
-    blink_underflow_led : process( clock, reset )
+    blink_underflow_led : process( fifo_clock, reset )
         variable downcount : natural range 0 to 2**underflow_duration'length-1 := 0;
     begin
         if( reset = '1' ) then
             downcount     := 0;
             underflow_led <= '0';
-        elsif( rising_edge(clock) ) then
+        elsif( rising_edge(fifo_clock) ) then
             -- Default to not being asserted
             underflow_led <= '0';
 

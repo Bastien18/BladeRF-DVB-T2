@@ -75,6 +75,7 @@ package bladerf_p is
             outclk_0 : out std_logic;        -- outclk0.clk
             outclk_1 : out std_logic;        -- outclk1.clk
             outclk_2 : out std_logic;        -- outclk2.clk
+            outclk_3 : out std_logic;        -- outclk3.clk
             locked   : out std_logic         --  locked.export
         );
     end component;
@@ -193,8 +194,9 @@ package bladerf_p is
             META_FIFO_DATA_WIDTH  : natural                 := 128
         );
         port(
-            clock                 : in std_logic;                                     
-            reset                 : in std_logic;
+            fifo_clock          : in std_logic;
+            ts_clock            : in std_logic;                                     
+            reset               : in std_logic;
             enable              : in std_logic;
     
             usb_speed           : in std_logic;
