@@ -358,8 +358,14 @@ begin
                 ts_future.ts_data  <= fifo_data(((ts_current.byte_sel+1)*8)-1 downto (ts_current.byte_sel*8));
                 
                 if ts_current.byte_sel = 3 then 
-                    ts_future.state <= WAIT_WREQ;
-                    ts_wack_s <= '1';
+                    if ts_busy = '0' and fifo_empty = '0' then 
+                        ts_future.state <= TS_WRITE;
+                        ts_future.byte_sel <= 0;
+                        ts_wack_s <= '1';
+                    else
+                        ts_future.state <= WAIT_WREQ;
+                        ts_wack_s <= '1';
+                    end if;
                 else
                     ts_future.byte_sel <= ts_current.byte_sel + 1;
                     ts_future.state <= TS_WRITE;

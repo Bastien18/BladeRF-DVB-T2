@@ -246,7 +246,7 @@
 		output_clock_frequency15 => "0 MHz",
 		output_clock_frequency16 => "0 MHz",
 		output_clock_frequency17 => "0 MHz",
-		output_clock_frequency2 => "36.571428 MHz",
+		output_clock_frequency2 => "1.250305 MHz",
 		output_clock_frequency3 => "9.142857 MHz",
 		output_clock_frequency4 => "0 MHz",
 		output_clock_frequency5 => "0 MHz",

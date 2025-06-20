@@ -344,6 +344,14 @@ begin
             locked   => open
         );
 
+    U_TS_clock : component TS_clock 
+        port map(
+            refclk    => c5_clock2,
+            rst       => sys_pll_reset,
+            outclk_0  => open,
+            locked    => open
+        );
+
     -- Clock_x2 for internal OSG RAM in DVB-T2_mod
     /*U_clockx2_pll : component clockx2_pll
         port map (
@@ -712,7 +720,7 @@ begin
     )
     port map (
         fifo_clock          =>  t2_clock_s,
-        ts_clock            =>  ts_data_refclk_s,
+        ts_clock            =>  ts_data_clock_s,
         reset               =>  sys_pll_reset,
         enable              =>  tx_enable,
 
@@ -768,7 +776,7 @@ begin
             --ts_data          => ts_data_s,          --              .data
             --ts_data_refclk   => ts_data_refclk_s,                   --              .data_refclk
             --ts_data_busy     => open,                   --              .data_busy
-            ts_data_clk      => ts_data_refclk_s,               --        TS_Clk.clk see if tx_clock works
+            ts_data_clk      => ts_data_clock_s,               --        TS_Clk.clk see if tx_clock works
             ts_data_valid    => ts_data_valid_s,                    --            TS.data_valid
             ts_data          => ts_data_s,          --              .data
             ts_data_refclk   => ts_data_refclk_s,                   --              .data_refclk

@@ -291,7 +291,46 @@ Here is the shape after correction:
 
 After this I still can't get any video signal with the T2 core. I check the modulation of the PLP is set to QSPK and it was the case.
 
+#### Solution for video on the tuner
+
+The issue was the way the fifo2ts interact with TS interface of the T2 core. By reading the 0x8004 register, I found out the TS synchronisation lock was never raise + the 0x8014 register appears to be null which indicates that my TS input bitrate was NULL. Andy, told me that there was something strange since one byte of the TS stream stays at same value for around 12 ts_data_clk cycle which is not good. I decided to use the ts_data_refclk also for both the TS side of my fifo2ts component and the ts_data_clk.
+
+The ts_data_refclk indicate the maximimum byte range acceptable by the T2 core before ts_busy start raising and stall the data flow inside my fifo2ts component. This ts_data_refclk varies when we're changing the parameter of the T2 core.
+
+Now I get video but it is very jerky and I need to smoothes it.
+
+#### Debugging video stuttering
+
+I did get rid of the rollback problem by using a ts_data_clk of 1.25MHz and having it clocking both TS interface of T2 core and fifo2ts TS side. Also the .ts file needs an bitrate of 10Mbps this can be done by adjusting the muxrate on ffmpeg.
+
+Now the video only pause a lot but when video is playing the playback is smooth. Logging the playback with VLC indicates that TEI flag in TS packet are raised many times.
+
+I tried dumping the whole TS stream in a file to analyse the bitrate. The actual bitrate of the received TS stream is around 3Mbps which is much lower than expected.
+
+I tried finding a gnuradio configuration that is working and try to reproduct it inside the T2 core. Here is the config:
+
+- FECFRAME size normal 64k
+- Code rate 2/3
+- Baseband framing mode High Efficiency Mode
+- In band signaling off
+- PLP constellation 64QAM
+- FEC block per frame 151
+- Constellation rotation off
+- TI blocks per frame 3
+- Extended Carrier Mode => extended
+- FFT size 16K
+- Guard interval 19/256
+- L1 constellation BPSK
+- Pilot Pattern PP2
+- T2 frame per super frame 2
+- Number of data symbols 128
+- PAPR off
+- CP lenght 1216
+
+
 ### Things to do
+
+DVB-T2 RX issue
 
 - Ask Andy if we can configure the resampler
 - Ask Andy about oversampling
@@ -308,7 +347,15 @@ After this I still can't get any video signal with the T2 core. I check the modu
 - Understand the NIOS data streaming
 - Log data into some flash memory
 
+Stuttering issue
 
+- Recorde whole TS stream and calculate actual bitrate
+- Reading TS status register if any error flags are raised
+- Ensure TS file is not playing in a loop => this would give a sync-error and re-acquire
+- Use the incremental file to see any byte error inside packet
+- Improve AD9361 filtering to get rid of the side lobes issue => use the wizard the find the best configuration for our case
+- Double check T2 parameter with the soft Andy mentionned in one of his email 
+- Copy one of a working gnuradio configuration inside commsonic T2 core (choose one that is close to the T2 specs from the elix gdoc)
 
 
 ### Project follow up (No more relevant)

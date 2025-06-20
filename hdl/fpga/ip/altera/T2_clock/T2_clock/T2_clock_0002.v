@@ -34,7 +34,7 @@ module  T2_clock_0002(
 		.output_clock_frequency1("146.285714 MHz"),
 		.phase_shift1("0 ps"),
 		.duty_cycle1(50),
-		.output_clock_frequency2("36.571428 MHz"),
+		.output_clock_frequency2("1.250305 MHz"),
 		.phase_shift2("0 ps"),
 		.duty_cycle2(50),
 		.output_clock_frequency3("9.142857 MHz"),
