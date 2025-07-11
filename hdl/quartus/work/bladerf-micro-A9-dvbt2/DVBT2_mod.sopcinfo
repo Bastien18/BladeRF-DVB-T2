@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <EnsembleReport name="DVBT2_mod" kind="DVBT2_mod" version="1.0" fabric="QSYS">
  <!-- Format version 17.1 590 (Future versions may contain additional information.) -->
- <!-- 2025.03.12.14:01:14 -->
+ <!-- 2025.06.24.14:20:58 -->
  <!-- A collection of modules and connections -->
  <parameter name="AUTO_GENERATION_ID">
   <type>java.lang.Integer</type>
-  <value>1741784474</value>
+  <value>1750767658</value>
   <derived>false</derived>
   <enabled>true</enabled>
   <visible>false</visible>
@@ -180,7 +180,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="BUILD_DEVICE_FAMILY">
    <type>java.lang.String</type>
-   <value>ALT_GENERIC</value>
+   <value>ALT_CYCLONE_5</value>
    <derived>true</derived>
    <enabled>true</enabled>
    <visible>false</visible>
@@ -188,7 +188,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="GUI_DEVICE_FAMILY">
    <type>java.lang.String</type>
-   <value>Generic</value>
+   <value>Cyclone-5</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -196,7 +196,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="CLOCK_FREQUENCY_KHZ">
    <type>int</type>
-   <value>100000</value>
+   <value>73143</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -244,7 +244,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="BUILD_MAX_FFT_SIZE">
    <type>int</type>
-   <value>8192</value>
+   <value>4096</value>
    <derived>true</derived>
    <enabled>true</enabled>
    <visible>false</visible>
@@ -252,7 +252,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="GUI_MAX_FFT_SIZE">
    <type>java.lang.String</type>
-   <value>8k</value>
+   <value>4k</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -260,7 +260,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="BUILD_CRITICAL_FILTER">
    <type>int</type>
-   <value>0</value>
+   <value>2</value>
    <derived>true</derived>
    <enabled>true</enabled>
    <visible>false</visible>
@@ -268,7 +268,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="GUI_CRITICAL_FILTER">
    <type>java.lang.String</type>
-   <value>Normal</value>
+   <value>Best</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -276,7 +276,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="BUILD_INBAND_EQUALISER">
    <type>int</type>
-   <value>0</value>
+   <value>1</value>
    <derived>true</derived>
    <enabled>true</enabled>
    <visible>false</visible>
@@ -284,7 +284,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="GUI_INBAND_EQUALISER">
    <type>boolean</type>
-   <value>false</value>
+   <value>true</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -292,7 +292,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="BUILD_FFT_WINDOW">
    <type>int</type>
-   <value>0</value>
+   <value>1</value>
    <derived>true</derived>
    <enabled>true</enabled>
    <visible>false</visible>
@@ -300,7 +300,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="GUI_FFT_WINDOW">
    <type>boolean</type>
-   <value>false</value>
+   <value>true</value>
    <derived>false</derived>
    <enabled>true</enabled>
    <visible>true</visible>
@@ -620,7 +620,7 @@ the requested settings for a module instance. -->
   </parameter>
   <parameter name="DAC_PROG_CLOCK_FREQUENCY_KHZ">
    <type>int</type>
-   <value>100000</value>
+   <value>73143</value>
    <derived>true</derived>
    <enabled>true</enabled>
    <visible>false</visible>
