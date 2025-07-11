@@ -12,13 +12,13 @@
 # or its authorized distributors. Please refer to the applicable 
 # agreement for further details.
 
-# ACDS 17.1 590 win32 2025.07.04.11:28:03
+# ACDS 17.1 590 win32 2025.07.11.13:26:01
 # ----------------------------------------
 # Auto-generated simulation script rivierapro_setup.tcl
 # ----------------------------------------
 # This script provides commands to simulate the following IP detected in
 # your Quartus project:
-#     T2_clock
+#     TS_clock
 # 
 # Altera recommends that you source this Quartus-generated IP simulation
 # script from your own customized top-level script, and avoid editing this
@@ -84,7 +84,7 @@
 # 
 # IP SIMULATION SCRIPT
 # ----------------------------------------
-# If T2_clock is one of several IP cores in your
+# If TS_clock is one of several IP cores in your
 # Quartus project, you can generate a simulation script
 # suitable for inclusion in your top-level simulation
 # script by running the following command line:
@@ -105,7 +105,7 @@ if ![info exists SYSTEM_INSTANCE_NAME] {
 }
 
 if ![info exists TOP_LEVEL_NAME] { 
-  set TOP_LEVEL_NAME "T2_clock"
+  set TOP_LEVEL_NAME "TS_clock"
 }
 
 if ![info exists QSYS_SIMDIR] { 
@@ -201,7 +201,7 @@ alias dev_com {
 # Compile the design files in correct order
 alias com {
   echo "\[exec\] com"
-  eval  vcom $USER_DEFINED_VHDL_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS "$QSYS_SIMDIR/T2_clock.vho"
+  eval  vcom $USER_DEFINED_VHDL_COMPILE_OPTIONS $USER_DEFINED_COMPILE_OPTIONS "$QSYS_SIMDIR/TS_clock.vho"
 }
 
 # ----------------------------------------

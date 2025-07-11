@@ -46,7 +46,7 @@ set_global_assignment -name QIP_FILE  [file normalize                  nios_syst
 set_global_assignment -name QIP_FILE [file normalize bladeRF_nios/mem_init/meminit.qip]
 
 # Commsonic DVB-T2
-set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/DVBT2_mod.vhd]]
+set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/DVBT2_mod_top.vhd]]
 set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/ea_cms0041_wrap.vhd]]
 set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/ea_cms0041.vhd]]
 set_global_assignment -name VHDL_FILE [file normalize [file join $dvbt2_ip synthesis/submodules/p_cms0041_comp.vhd]]
