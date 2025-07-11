@@ -167,11 +167,12 @@ architecture dvbt2_bladerf of bladerf is
     signal baseband_valid_s       : std_logic;
 
     signal byte_count               : unsigned(7 DOWNTO 0); 
-    signal ts_data_s                : std_logic_vector(7 DOWNTO 0); 
+    signal ts_data_fut_s, ts_data_pres_s                : std_logic_vector(7 DOWNTO 0); 
     signal ts_data_valid_s          : std_logic; 
     signal ts_data_refclk_s         : std_logic;
     signal ts_busy_s                : std_logic;
     signal ts_data_clock_s          : std_logic;
+    signal ts_data_clock_x2_s       : std_logic;
     
     signal t2_clock_s             : std_logic;
     signal clockx2_s              : std_logic;
@@ -210,7 +211,7 @@ architecture dvbt2_bladerf of bladerf is
         state       => IDLE,
         reg_chip_en => '0',
         reg_wr_en   => '0',
-        reg_address => x"08004",
+        reg_address => x"08014",
         reg_rd_data => (others => '0')
     );
 
@@ -337,9 +338,9 @@ begin
         port map(
             refclk   => c5_clock2,
             rst      => sys_pll_reset,
-            outclk_0 => T2_clock_s,
+            outclk_0 => t2_clock_s,
             outclk_1 => clockx2_s,
-            outclk_2 => ts_data_clock_s,
+            outclk_2 => open,
             outclk_3 => dac_clock_s,
             locked   => open
         );
@@ -348,7 +349,8 @@ begin
         port map(
             refclk    => c5_clock2,
             rst       => sys_pll_reset,
-            outclk_0  => open,
+            outclk_0  => ts_data_clock_s,
+            outclk_1  => ts_data_clock_x2_s,
             locked    => open
         );
 
@@ -751,12 +753,12 @@ begin
         underflow_count     =>  open,
         underflow_duration  =>  x"ffff",
 
-        ts_data             => ts_data_s,
+        ts_data             => ts_data_fut_s,
         ts_valid            => ts_data_valid_s,
         ts_busy             => ts_busy_s 
     );
 
-    U_dvb_t2_modulator : entity work.DVBT2_mod
+    U_dvb_t2_modulator : entity work.DVBT2_mod_top
         port map(
             clock            => t2_clock_s,               -- fx3_pclk_pll is 100MHz clock
             clock_x2         => clockx2_s,                            -- Internal OSG RAM clock 200MHz
@@ -778,7 +780,7 @@ begin
             --ts_data_busy     => open,                   --              .data_busy
             ts_data_clk      => ts_data_clock_s,               --        TS_Clk.clk see if tx_clock works
             ts_data_valid    => ts_data_valid_s,                    --            TS.data_valid
-            ts_data          => ts_data_s,          --              .data
+            ts_data          => ts_data_pres_s,          --              .data
             ts_data_refclk   => ts_data_refclk_s,                   --              .data_refclk
             ts_data_busy     => ts_busy_s,                   --              .data_busy
             -- Ram 
@@ -804,6 +806,15 @@ begin
             --baseband_q       => open,           --              .q
             --baseband_valid   => open        --              .valid
         );
+
+    process(ts_data_clock_x2_s, sys_pll_reset)
+    begin
+        if sys_pll_reset = '1' then
+            ts_data_pres_s <= (others => '0');
+        elsif rising_edge(ts_data_clock_x2_s) then
+            ts_data_pres_s <= ts_data_fut_s;
+        end if;
+    end process;
 
     dac_assignment_proc : process( all )
     begin

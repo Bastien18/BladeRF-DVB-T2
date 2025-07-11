@@ -327,6 +327,28 @@ I tried finding a gnuradio configuration that is working and try to reproduct it
 - PAPR off
 - CP lenght 1216
 
+I've tried changing the configuration but nothing is really happening. Andy's default config seems to work the best but changing parameter of the T2 core configuration often makes it worst. Sometimes I get no video but the tuner locks the signal and sometimes the tuner can't lock the signal at all.
+
+The problem doesn't seems to come from after the T2 core. I was worried that the decimation of sample was the issue. But since the core upsample to reach the sys clock frequency it's not really an issue while we're not decimating upon half sys frequency. 9.142857 works fine because it's < 73.142857 / 2.
+
+There is an imprecision of 2.4Kbps between the .ts file and the TS interface data clock. The .ts file is encoded at 10Mbps and the ts_data_clk signal is 1.2503MHz. Since the frequency correspond to the byte rate, the fifo2ts component feed bit at a 10,0024Mbps rate. By reading the input bitrate register, I saw this fluctuation:
+
+0x98a350 => 10 003 280 Mbps
+0x989c20 => 10 001 440 Mbps
+0x98a1e0 => 10 002 912 Mbps
+0x989b30 => 10 001 200 Mbps
+0x98a4e0 => 10 003 680 Mbps
+0x98a340 => 10 003 264 Mbps
+0x98a340 => 10 003 264 Mbps
+0x98a0a0 => 10 002 592 Mbps
+0x98a440 => 10 003 520 Mbps
+
+It seems we're not very stable and precise to reach the ts file bitrate.
+
+
+
+
+
 
 ### Things to do
 
@@ -355,7 +377,18 @@ Stuttering issue
 - Use the incremental file to see any byte error inside packet
 - Improve AD9361 filtering to get rid of the side lobes issue => use the wizard the find the best configuration for our case
 - Double check T2 parameter with the soft Andy mentionned in one of his email 
-- Copy one of a working gnuradio configuration inside commsonic T2 core (choose one that is close to the T2 specs from the elix gdoc)
+
+- (Copy one of a working gnuradio configuration inside commsonic T2 core (choose one that is close to the T2 specs from the elix gdoc))
+- Copy configuration from bbc standard available at [https://github.com/drmpeg/dtv-utils/blob/master/dvbt2rate.c](https://github.com/drmpeg/dtv-utils/blob/master/dvbt2rate.c)
+- Try with a TS file from internet using the right bitrate
+- Ask Andy for new license
+- Ask if he can make the configuration of the MISO directly inside the core
+- Read the MISO part in the commsonic T2 core doc
+- Gather information about adapting bladeRF micro for MISO (alamouti, softcore adaptation, TX2 usage, clocking adaptation)
+- Estimate time to have video working smoothly + MISO adaptation
+
+- Ask about Alamouti scheme and config file for two different T2 core.
+
 
 
 ### Project follow up (No more relevant)
