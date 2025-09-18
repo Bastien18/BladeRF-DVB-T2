@@ -1,0 +1,541 @@
+{
+	"partitions" : [
+		{
+			"name" : "Top",
+			"pins" : [
+				{
+					"name" : "adi_sync_in",
+					"strict" : false
+				},
+				{
+					"name" : "si_clock_sel",
+					"strict" : false
+				},
+				{
+					"name" : "ufl_clock_oe",
+					"strict" : false
+				},
+				{
+					"name" : "dac_sclk",
+					"strict" : false
+				},
+				{
+					"name" : "dac_sdi",
+					"strict" : false
+				},
+				{
+					"name" : "dac_csn",
+					"strict" : false
+				},
+				{
+					"name" : "led[1]",
+					"strict" : false
+				},
+				{
+					"name" : "led[2]",
+					"strict" : false
+				},
+				{
+					"name" : "led[3]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_spi_csn",
+					"strict" : false
+				},
+				{
+					"name" : "adf_sclk",
+					"strict" : false
+				},
+				{
+					"name" : "adf_csn",
+					"strict" : false
+				},
+				{
+					"name" : "adf_sdi",
+					"strict" : false
+				},
+				{
+					"name" : "adf_ce",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_uart_rxd",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_uart_cts",
+					"strict" : false
+				},
+				{
+					"name" : "ps_sync_1p1",
+					"strict" : false
+				},
+				{
+					"name" : "ps_sync_1p8",
+					"strict" : false
+				},
+				{
+					"name" : "pwr_scl",
+					"strict" : false
+				},
+				{
+					"name" : "adi_rx_spdt1_v[1]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_rx_spdt1_v[2]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_rx_spdt2_v[1]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_rx_spdt2_v[2]",
+					"strict" : false
+				},
+				{
+					"name" : "rx_bias_en",
+					"strict" : false
+				},
+				{
+					"name" : "adi_tx_spdt1_v[1]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_tx_spdt1_v[2]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_tx_spdt2_v[1]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_tx_spdt2_v[2]",
+					"strict" : false
+				},
+				{
+					"name" : "tx_bias_en",
+					"strict" : false
+				},
+				{
+					"name" : "adi_spi_sclk",
+					"strict" : false
+				},
+				{
+					"name" : "adi_spi_sdi",
+					"strict" : false
+				},
+				{
+					"name" : "adi_reset_n",
+					"strict" : false
+				},
+				{
+					"name" : "adi_enable",
+					"strict" : false
+				},
+				{
+					"name" : "adi_txnrx",
+					"strict" : false
+				},
+				{
+					"name" : "adi_en_agc",
+					"strict" : false
+				},
+				{
+					"name" : "adi_ctrl_in[0]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_ctrl_in[1]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_ctrl_in[2]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_ctrl_in[3]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_clock_oe",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[0]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[1]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[2]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[3]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[4]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[5]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[6]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[7]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[8]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[9]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[10]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[11]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[12]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[13]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[14]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[15]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[16]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[17]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[18]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[19]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[20]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[21]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[22]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[23]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[24]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[25]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[26]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[27]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[28]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[29]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[30]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_gpif[31]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_ctl[0]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_ctl[3]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_ctl[4]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_ctl[5]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_ctl[6]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_ctl[7]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_ctl[8]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_ctl[10]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_ctl[11]",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_ctl[12]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[0]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[1]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[2]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[3]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[4]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[5]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[6]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[7]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[8]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[9]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[10]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[11]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[12]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[13]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[14]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[15]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[16]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[17]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[18]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[19]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[20]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[21]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[22]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[23]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[24]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[25]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[26]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[27]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[28]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[29]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[30]",
+					"strict" : false
+				},
+				{
+					"name" : "exp_gpio[31]",
+					"strict" : false
+				},
+				{
+					"name" : "mini_exp1",
+					"strict" : false
+				},
+				{
+					"name" : "mini_exp2",
+					"strict" : false
+				},
+				{
+					"name" : "pwr_sda",
+					"strict" : false
+				},
+				{
+					"name" : "exp_present",
+					"strict" : false
+				},
+				{
+					"name" : "exp_clock_req",
+					"strict" : false
+				},
+				{
+					"name" : "c5_clock2",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_pclk",
+					"strict" : false
+				},
+				{
+					"name" : "pwr_status",
+					"strict" : false
+				},
+				{
+					"name" : "adi_ctrl_out[5]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_ctrl_out[3]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_ctrl_out[4]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_ctrl_out[6]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_ctrl_out[7]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_ctrl_out[2]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_ctrl_out[0]",
+					"strict" : false
+				},
+				{
+					"name" : "adi_ctrl_out[1]",
+					"strict" : false
+				},
+				{
+					"name" : "adf_muxout",
+					"strict" : false
+				},
+				{
+					"name" : "adi_spi_sdo",
+					"strict" : false
+				},
+				{
+					"name" : "fx3_uart_txd",
+					"strict" : false
+				}
+			]
+		}
+	]
+}

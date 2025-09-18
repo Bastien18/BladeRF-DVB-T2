@@ -1,0 +1,1694 @@
+-- Copyright (c) 2017 Nuand LLC
+--
+-- Permission is hereby granted, free of charge, to any person obtaining a copy
+-- of this software and associated documentation files (the "Software"), to deal
+-- in the Software without restriction, including without limitation the rights
+-- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+-- copies of the Software, and to permit persons to whom the Software is
+-- furnished to do so, subject to the following conditions:
+--
+-- The above copyright notice and this permission notice shall be included in
+-- all copies or substantial portions of the Software.
+--
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+-- THE SOFTWARE.
+
+library ieee;
+    use ieee.std_logic_1164.all;
+    use ieee.numeric_std.all;
+    use ieee.math_real.all;
+    use ieee.math_complex.all;
+
+library work;
+    use work.bladerf;
+    use work.bladerf_p.all;
+    use work.fifo_readwrite_p.all;
+
+architecture dvbt2_miso_bladerf of bladerf is
+
+    attribute noprune          : boolean;
+    attribute keep             : boolean;
+
+    alias  sys_reset_async     : std_logic is fx3_ctl(7);
+    signal sys_reset_pclk      : std_logic;
+    signal sys_reset           : std_logic;
+
+    constant NUM_MIMO_STREAMS : natural := 2;
+
+    signal sys_clock           : std_logic;
+    signal sys_clock_out       : std_logic;
+    signal sys_pll_locked      : std_logic;
+    signal sys_pll_reset       : std_logic;
+
+    signal fx3_pclk_pll        : std_logic;
+    signal fx3_pclk_pll_out    : std_logic;
+    signal fx3_pclk_pll_locked : std_logic;
+    signal fx3_pclk_pll_reset  : std_logic;
+
+    signal rx_mux_sel             : unsigned(2 downto 0);
+
+    signal nios_xb_gpio_in        : std_logic_vector(31 downto 0) := (others => '0');
+    signal nios_xb_gpio_out       : std_logic_vector(31 downto 0) := (others => '0');
+    signal nios_xb_gpio_oe        : std_logic_vector(31 downto 0) := (others => '0');
+
+    signal nios_gpio              : nios_gpio_t;
+    signal nios_gpo_slv           : std_logic_vector(31 downto 0);
+
+    signal i2c_scl_in             : std_logic;
+    signal i2c_scl_out            : std_logic;
+    signal i2c_scl_oen            : std_logic;
+
+    signal i2c_sda_in             : std_logic;
+    signal i2c_sda_out            : std_logic;
+    signal i2c_sda_oen            : std_logic;
+
+    signal tx_sample_fifo         : tx_fifo_t       := TX_FIFO_T_DEFAULT;
+    signal rx_sample_fifo         : rx_fifo_t       := RX_FIFO_T_DEFAULT;
+    signal tx_loopback_fifo       : loopback_fifo_t := LOOPBACK_FIFO_T_DEFAULT;
+
+    signal tx_meta_fifo           : meta_fifo_tx_t := META_FIFO_TX_T_DEFAULT;
+    signal rx_meta_fifo           : meta_fifo_rx_t := META_FIFO_RX_T_DEFAULT;
+
+    signal usb_speed_pclk         : std_logic;
+    signal usb_speed_rx           : std_logic;
+    signal usb_speed_tx           : std_logic;
+
+    signal tx_reset               : std_logic;
+    signal rx_reset               : std_logic;
+
+    signal tx_enable_pclk         : std_logic;
+    signal rx_enable_pclk         : std_logic;
+
+    signal tx_enable              : std_logic;
+    signal rx_enable              : std_logic;
+
+    signal meta_en_pclk           : std_logic;
+    signal meta_en_tx             : std_logic;
+    signal meta_en_rx             : std_logic;
+
+    signal eightbit_en_pclk       : std_logic;
+    signal eightbit_en_tx         : std_logic;
+    signal eightbit_en_rx         : std_logic;
+
+    signal packet_en_pclk         : std_logic;
+    signal packet_en_tx           : std_logic;
+    signal packet_en_rx           : std_logic;
+
+    signal tx_timestamp           : unsigned(63 downto 0);
+    signal rx_timestamp           : unsigned(63 downto 0);
+    signal timestamp_sync         : std_logic;
+
+    signal tx_loopback_enabled    : std_logic := '0';
+
+    signal fx3_gpif_in            : std_logic_vector(31 downto 0);
+    signal fx3_gpif_out           : std_logic_vector(31 downto 0);
+    signal fx3_gpif_oe            : std_logic;
+
+    signal fx3_ctl_in             : std_logic_vector(12 downto 0);
+    signal fx3_ctl_out            : std_logic_vector(12 downto 0);
+    signal fx3_ctl_oe             : std_logic_vector(12 downto 0);
+
+    signal tx_underflow_led       : std_logic := '1';
+    signal rx_overflow_led        : std_logic := '1';
+
+    signal led1_blink             : std_logic;
+
+    signal nios_sdo               : std_logic;
+    signal nios_sdio              : std_logic;
+    signal nios_sclk              : std_logic;
+    signal nios_ss_n              : std_logic_vector(1 downto 0);
+
+    signal command_serial_in      : std_logic;
+    signal command_serial_out     : std_logic;
+
+    signal timestamp_req          : std_logic;
+    signal timestamp_ack          : std_logic;
+    signal fx3_timestamp          : unsigned(63 downto 0);
+
+    signal rx_ts_reset            : std_logic;
+    signal tx_ts_reset            : std_logic;
+
+    signal rx_trigger_ctl_i       : std_logic_vector(7 downto 0);
+    signal rx_trigger_ctl         : trigger_t := TRIGGER_T_DEFAULT;
+    alias  rx_trigger_line        : std_logic is mini_exp1;
+
+    signal tx_trigger_ctl_i       : std_logic_vector(7 downto 0);
+    signal tx_trigger_ctl         : trigger_t := TRIGGER_T_DEFAULT;
+    alias  tx_trigger_line        : std_logic is mini_exp1;
+
+    signal rffe_gpio              : rffe_gpio_t := (
+        i => RFFE_GPI_DEFAULT,
+        o => pack(RFFE_GPO_DEFAULT)
+    );
+
+    signal ad9361                 : mimo_2r2t_t := MIMO_2R2T_T_DEFAULT;
+    alias tx_clock  is ad9361.clock;
+    alias rx_clock  is ad9361.clock;
+
+    signal mimo_rx_enables        : std_logic_vector(RFFE_GPO_DEFAULT.mimo_rx_en'range) := RFFE_GPO_DEFAULT.mimo_rx_en;
+    signal mimo_tx_enables        : std_logic_vector(RFFE_GPO_DEFAULT.mimo_tx_en'range) := RFFE_GPO_DEFAULT.mimo_tx_en;
+
+    signal dac_controls           : sample_controls_t(ad9361.ch'range)    := (others => SAMPLE_CONTROL_DISABLE);
+    signal dac_streams            : sample_streams_t(dac_controls'range)  := (others => ZERO_SAMPLE);
+    signal adc_controls           : sample_controls_t(ad9361.ch'range)    := (others => SAMPLE_CONTROL_DISABLE);
+    signal adc_streams            : sample_streams_t(adc_controls'range)  := (others => ZERO_SAMPLE);
+    signal adc_streams_last_v     : std_logic_vector(adc_controls'range)  := (others => '0');
+
+    -- DVB-T2 internal signal
+    type baseband_siso_tx_t is array (1 downto 0) of std_logic_vector(13 downto 0);
+    type baseband_miso_tx_t is array (1 downto 0) of baseband_siso_tx_t;
+    signal baseband_pres_i_g1_s, baseband_fut_i_g1_s           : std_logic_vector(13 downto 0);
+    signal baseband_pres_q_g1_s, baseband_fut_q_g1_s           : std_logic_vector(13 downto 0);
+    signal baseband_pres_i_g2_s, baseband_fut_i_g2_s           : std_logic_vector(13 downto 0);
+    signal baseband_pres_q_g2_s, baseband_fut_q_g2_s           : std_logic_vector(13 downto 0);
+    signal baseband_miso_tx : baseband_miso_tx_t;
+    
+    --signal baseband_i_s           : std_logic_vector(15 downto 0);
+    --signal baseband_q_s           : std_logic_vector(15 downto 0);
+    signal baseband_valid_g1_s, baseband_valid_g2_s        : std_logic;
+
+    signal byte_count               : unsigned(7 DOWNTO 0); 
+    signal ts_data_fut_s, ts_data_pres_s                : std_logic_vector(7 DOWNTO 0); 
+    signal ts_data_valid_s          : std_logic; 
+    signal ts_data_refclk_g1_s, ts_data_refclk_g2_s         : std_logic;
+    signal ts_busy_g1_s, ts_busy_g2_s                : std_logic;
+    signal ts_data_clock_fut_s, ts_data_clock_pres_s          : std_logic;
+    signal ts_data_clock_x8_s       : std_logic;
+    signal ts_clk_div_fut_s, ts_clk_div_pres_s        : unsigned(3 downto 0);
+
+    
+    signal t2_clock_s             : std_logic;
+    signal clockx2_s              : std_logic;
+    signal dac_clock_s            : std_logic;
+
+    signal counter_i_s            : unsigned(15 downto 0);
+    signal counter_q_s            : unsigned(15 downto 0);
+
+    signal resampler_counter_s       : unsigned(3 downto 0);
+
+    signal wreq_counter_s           : unsigned(31 downto 0);
+
+    signal tick_s   : std_logic;
+
+    signal t2_frame_counter_s       : unsigned(3 downto 0);
+    signal dac_frame_s              : std_logic;
+    signal dac_data_s               : std_logic_vector(5 downto 0);
+    signal i_12bits_s               : std_logic_vector(11 downto 0);
+    signal q_12bits_s               : std_logic_vector(11 downto 0);
+
+    type reg_state_g1_t is (
+        IDLE,
+        READ_REQ,
+        DATA
+    );
+
+    type reg_state_g2_t is (
+        IDLE,
+        IDLE_RD,
+        WRITE,
+        READ_REQ,
+        DATA
+    );
+
+    type reg_fsm_g1_t is record
+        state           : reg_state_g1_t;
+        reg_chip_en     : std_logic;
+        reg_wr_en       : std_logic;
+        reg_address     : std_logic_vector(19 downto 0);
+        reg_rd_data     : std_logic_vector(31 downto 0);
+    end record;
+
+    type reg_fsm_g2_t is record
+        state           : reg_state_g2_t;
+        reg_chip_en     : std_logic;
+        reg_wr_en       : std_logic;
+        reg_address     : std_logic_vector(19 downto 0);
+        reg_wr_data     : std_logic_vector(31 downto 0);
+        reg_rd_data     : std_logic_vector(31 downto 0);
+    end record;
+
+    constant REG_FSM_RESET_VALUE_G1 : reg_fsm_g1_t := (
+        state       => IDLE,
+        reg_chip_en => '0',
+        reg_wr_en   => '0',
+        reg_address => x"08004",
+        reg_rd_data => (others => '0')
+    );
+
+    constant REG_FSM_RESET_VALUE_G2 : reg_fsm_g2_t := (
+        state       => IDLE,
+        reg_chip_en => '0',
+        reg_wr_en   => '0',
+        reg_address => x"08004",
+        reg_wr_data => x"00003042",
+        reg_rd_data => (others => '0')
+    );
+
+    signal reg_fsm_future_g1   : reg_fsm_g1_t := REG_FSM_RESET_VALUE_G1;
+    signal reg_fsm_current_g1  : reg_fsm_g1_t := REG_FSM_RESET_VALUE_G1;
+    signal reg_fsm_future_g2   : reg_fsm_g2_t := REG_FSM_RESET_VALUE_G2;
+    signal reg_fsm_current_g2  : reg_fsm_g2_t := REG_FSM_RESET_VALUE_G2;
+    signal reg_cmd_ack_g1_s, reg_cmd_ack_g2_s    : std_logic;
+    signal reg_rd_data_g1_s, reg_rd_data_g2_s    : std_logic_vector(31 downto 0);
+    signal reg_written_s    : std_logic := '0';
+
+    -- blockRAM internal signal                    
+    signal ram_cs_g1_s, ram_cs_g2_s                : STD_LOGIC;                      
+    signal ram_burst_access_g1_s, ram_burst_access_g2_s      : STD_LOGIC;                      
+    signal ram_burst_size_g1_s, ram_burst_size_g2_s        : STD_LOGIC_VECTOR(3 DOWNTO 0);                                                               
+    signal ram_address_g1_s, ram_address_g2_s           : STD_LOGIC_VECTOR(23 DOWNTO 0);
+    signal ram_wr_en_g1_s, ram_wr_en_g2_s             : STD_LOGIC;                      
+    signal ram_wrdata_g1_s, ram_wrdata_g2_s            : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    signal ram_rd_en_g1_s, ram_rd_en_g2_s             : STD_LOGIC;                      
+    signal ram_rddata_g1_s, ram_rddata_g2_s            : STD_LOGIC_VECTOR(31 DOWNTO 0);
+    signal ram_rddata_valid_g1_s, ram_rddata_valid_g2_s      : STD_LOGIC;                      
+    signal ram_busy_g1_s, ram_busy_g2_s              : STD_LOGIC;                      
+    signal ram_available_g1_s, ram_available_g2_s         : STD_LOGIC;                      
+    signal ram_empty_g1_s, ram_empty_g2_s             : STD_LOGIC;   
+    
+    -- Signaltap_pll
+    signal clk_out_300MHz_s   : std_logic;
+
+    signal   ps_sync              : std_logic_vector(0 downto 0)          := (others => '0');
+
+    signal tx_packet_control      : packet_control_t ;
+    signal rx_packet_control      : packet_control_t := PACKET_CONTROL_DEFAULT ;
+
+    signal rx_packet_ready        : std_logic;
+
+    signal tx_packet_ready        : std_logic;
+    signal tx_packet_empty        : std_logic;
+
+
+    signal wbm_wb_clk_i           : std_logic;
+    signal wbm_wb_rst_i           : std_logic;
+    signal wbm_wb_adr_o           : std_logic_vector(31 downto 0);
+    signal wbm_wb_dat_o           : std_logic_vector(31 downto 0);
+    signal wbm_wb_dat_i           : std_logic_vector(31 downto 0);
+    signal wbm_wb_we_o            : std_logic;
+    signal wbm_wb_sel_o           : std_logic;
+    signal wbm_wb_stb_o           : std_logic;
+    signal wbm_wb_ack_i           : std_logic;
+    signal wbm_wb_cyc_o           : std_logic;
+begin
+
+    U_rx_pkt_gen : entity work.rx_packet_generator
+        port map(
+            rx_clock               => rx_clock,
+            rx_reset               => rx_reset,
+
+            rx_packet_ready        => rx_packet_ready,
+
+            rx_enable              => rx_enable,
+            rx_packet_enable       => packet_en_rx,
+
+            rx_packet_control      => rx_packet_control
+        ) ;
+
+
+    -- ========================================================================
+    -- PLLs
+    -- ========================================================================
+
+    -- Create 80 MHz system clock from 38.4 MHz
+    U_system_pll : component system_pll
+        port map (
+            refclk   => c5_clock2,
+            rst      => sys_pll_reset,
+            outclk_0 => sys_clock_out,
+            locked   => sys_pll_locked
+        );
+
+    U_system_pll_ctrl : component clk_ctrl
+        port map (
+            inclk   => sys_clock_out,
+            ena     => sys_pll_locked,
+            outclk  => sys_clock
+        );
+
+    U_pll_reset_pll : entity work.pll_reset
+        generic map (
+            SYS_CLOCK_FREQ_HZ   => 38_400_000,
+            DEVICE_FAMILY       => "Cyclone V"
+        )
+        port map (
+            sys_clock      => c5_clock2,
+            pll_locked     => sys_pll_locked,
+            pll_reset      => sys_pll_reset
+        );
+
+    -- Use PLL to adjust the phase of the FX3 PCLK to
+    -- retime the FX3 GPIF interface for timing closure.
+    U_fx3_pll : component fx3_pll
+        port map (
+            refclk   =>  fx3_pclk,
+            rst      =>  fx3_pclk_pll_reset,
+            outclk_0 =>  fx3_pclk_pll_out,
+            locked   =>  fx3_pclk_pll_locked
+        );
+
+    U_fx3_pll_ctrl : component clk_ctrl
+        port map (
+            inclk   => fx3_pclk_pll_out,
+            ena     => fx3_pclk_pll_locked,
+            outclk  => fx3_pclk_pll
+        );
+
+    U_pll_reset_fx3_pll : entity work.pll_reset
+        generic map (
+            SYS_CLOCK_FREQ_HZ   => 100_000_000,
+            DEVICE_FAMILY       => "Cyclone V"
+        )
+        port map (
+            sys_clock      => fx3_pclk,
+            pll_locked     => fx3_pclk_pll_locked,
+            pll_reset      => fx3_pclk_pll_reset
+        );
+
+    -- T2 core clock
+    U_T2_clock : component T2_clock
+        port map(
+            refclk   => c5_clock2,
+            rst      => sys_pll_reset,
+            outclk_0 => t2_clock_s,
+            outclk_1 => clockx2_s,
+            outclk_2 => open,
+            outclk_3 => dac_clock_s,
+            locked   => open
+        );
+
+    U_TS_clock : component TS_clock 
+        port map(
+            refclk    => c5_clock2,
+            rst       => sys_pll_reset,
+            outclk_0  => ts_data_clock_x8_s,
+            locked    => open
+        );
+
+    U_Probe_clock : component Probe_clock
+        port map(
+            refclk      => c5_clock2,
+            rst         => sys_pll_reset,
+            outclk_0    => clk_out_300MHz_s,
+            locked      => open   
+        );
+
+    -- Clock_x2 for internal OSG RAM in DVB-T2_mod
+    /*U_clockx2_pll : component clockx2_pll
+        port map (
+            refclk   => fx3_pclk, --  refclk.clk
+            rst      => fx3_pclk_pll_reset, --   reset.reset
+            outclk_0 => clockx2_s,        -- outclk0.clk
+            locked   => open         --  locked.export
+        );*/
+
+
+    -- ========================================================================
+    -- POWER SUPPLY SYNCHRONIZATION
+    -- ========================================================================
+
+    U_ps_sync : entity work.ps_sync
+        generic map (
+            OUTPUTS  => 1,
+            USE_LFSR => true,
+            HOP_LIST => adp2384_sync_divisors( REFCLK_HZ  => 38.4e6,
+                                               n_divisors => 7 ),
+            HOP_RATE => 100
+        )
+        port map (
+            refclk   => c5_clock2,
+            sync     => ps_sync
+        );
+
+    ps_sync_1p1 <= ps_sync(0);
+    ps_sync_1p8 <= ps_sync(0);
+
+    -- ========================================================================
+    -- FX3 GPIF
+    -- ========================================================================
+
+    -- FX3 GPIF
+    U_fx3_gpif : entity work.fx3_gpif
+        port map (
+            pclk                =>  fx3_pclk_pll,
+            reset               =>  sys_reset_pclk,
+
+            usb_speed           =>  usb_speed_pclk,
+
+            meta_enable         =>  meta_en_pclk,
+            packet_enable       =>  packet_en_pclk,
+            rx_enable           =>  rx_enable_pclk,
+            tx_enable           =>  tx_enable_pclk,
+
+            gpif_in             =>  fx3_gpif_in,
+            gpif_out            =>  fx3_gpif_out,
+            gpif_oe             =>  fx3_gpif_oe,
+            ctl_in              =>  fx3_ctl_in,
+            ctl_out             =>  fx3_ctl_out,
+            ctl_oe              =>  fx3_ctl_oe,
+
+            tx_fifo_write       =>  tx_sample_fifo.wreq,
+            tx_fifo_full        =>  tx_sample_fifo.wfull,
+            tx_fifo_empty       =>  tx_sample_fifo.wempty,
+            tx_fifo_usedw       =>  tx_sample_fifo.wused,
+            tx_fifo_data        =>  tx_sample_fifo.wdata,
+
+            tx_timestamp        =>  fx3_timestamp,
+            tx_meta_fifo_write  =>  tx_meta_fifo.wreq,
+            tx_meta_fifo_full   =>  tx_meta_fifo.wfull,
+            tx_meta_fifo_empty  =>  tx_meta_fifo.wempty,
+            tx_meta_fifo_usedw  =>  tx_meta_fifo.wused,
+            tx_meta_fifo_data   =>  tx_meta_fifo.wdata,
+
+            rx_fifo_read        =>  rx_sample_fifo.rreq,
+            rx_fifo_full        =>  rx_sample_fifo.rfull,
+            rx_fifo_empty       =>  rx_sample_fifo.rempty,
+            rx_fifo_usedw       =>  rx_sample_fifo.rused,
+            rx_fifo_data        =>  rx_sample_fifo.rdata,
+
+            rx_meta_fifo_read   =>  rx_meta_fifo.rreq,
+            rx_meta_fifo_full   =>  rx_meta_fifo.rfull,
+            rx_meta_fifo_empty  =>  rx_meta_fifo.rempty,
+            rx_meta_fifo_usedr  =>  rx_meta_fifo.rused,
+            rx_meta_fifo_data   =>  rx_meta_fifo.rdata
+        );
+
+    -- FX3 GPIF bidirectional signal control
+    register_gpif : process(sys_reset_pclk, fx3_pclk_pll)
+    begin
+        if( sys_reset_pclk = '1' ) then
+            fx3_gpif    <= (others =>'Z');
+            fx3_gpif_in <= (others =>'0');
+        elsif( rising_edge(fx3_pclk_pll) ) then
+            fx3_gpif_in <= fx3_gpif;
+            if( fx3_gpif_oe = '1' ) then
+                fx3_gpif <= fx3_gpif_out;
+            else
+                fx3_gpif <= (others =>'Z');
+            end if;
+        end if;
+    end process;
+
+    -- FX3 CTL bidirectional signal control
+    generate_ctl : for i in fx3_ctl'range generate
+        fx3_ctl(i) <= fx3_ctl_out(i) when fx3_ctl_oe(i) = '1' else 'Z';
+    end generate;
+
+    fx3_ctl_in <= fx3_ctl;
+
+    toggle_led1 : process(fx3_pclk_pll)
+        variable count : natural range 0 to 100_000_000 := 100_000_000;
+    begin
+        if( rising_edge(fx3_pclk_pll) ) then
+            count := count - 1;
+            if( count = 0 ) then
+                count := 100_000_000;
+                led1_blink <= not led1_blink;
+            end if;
+        end if;
+    end process;
+
+
+    -- ========================================================================
+    -- NIOS SYSTEM
+    -- ========================================================================
+
+    U_nios_system : component nios_system
+        port map (
+            clk_clk                         => sys_clock,
+            reset_reset_n                   => '1',
+            dac_MISO                        => nios_sdo,
+            dac_MOSI                        => nios_sdio,
+            dac_SCLK                        => nios_sclk,
+            dac_SS_n                        => nios_ss_n,
+            spi_MISO                        => adi_spi_sdo,
+            spi_MOSI                        => adi_spi_sdi,
+            spi_SCLK                        => adi_spi_sclk,
+            spi_SS_n                        => adi_spi_csn,
+            gpio_in_port                    => pack(nios_gpio.i, '0'),
+            gpio_out_port                   => nios_gpo_slv,
+            gpio_rffe_0_in_port             => pack(rffe_gpio),
+            gpio_rffe_0_out_port            => rffe_gpio.o,
+            ad9361_dac_sync_in_sync         => '0',
+            ad9361_dac_sync_out_sync        => adi_sync_in,
+            ad9361_data_clock_clk           => ad9361.clock, -- out std_logic;
+            ad9361_data_reset_reset         => ad9361.reset, -- out std_logic;
+            ad9361_device_if_rx_clk_in_p    => adi_rx_clock,
+            ad9361_device_if_rx_clk_in_n    => '0',
+            ad9361_device_if_rx_frame_in_p  => adi_rx_frame,
+            ad9361_device_if_rx_frame_in_n  => '0',
+            ad9361_device_if_rx_data_in_p   => adi_rx_data,
+            ad9361_device_if_rx_data_in_n   => (others => '0'),
+            ad9361_device_if_tx_clk_out_p   => adi_tx_clock,
+            --ad9361_device_if_tx_clk_out_p   => open,
+            ad9361_device_if_tx_clk_out_n   => open,
+            ad9361_device_if_tx_frame_out_p => adi_tx_frame,
+            --ad9361_device_if_tx_frame_out_p => open,
+            ad9361_device_if_tx_frame_out_n => open,
+            ad9361_device_if_tx_data_out_p  => adi_tx_data,
+            --ad9361_device_if_tx_data_out_p  => open,
+            ad9361_device_if_tx_data_out_n  => open,
+            ad9361_adc_i0_enable            => ad9361.ch(0).adc.i.enable, -- out sl
+            ad9361_adc_i0_valid             => ad9361.ch(0).adc.i.valid,  -- out sl
+            ad9361_adc_i0_data              => ad9361.ch(0).adc.i.data,   -- out slv(15:0)
+            ad9361_adc_i1_enable            => ad9361.ch(1).adc.i.enable, -- out sl
+            ad9361_adc_i1_valid             => ad9361.ch(1).adc.i.valid,  -- out sl
+            ad9361_adc_i1_data              => ad9361.ch(1).adc.i.data,   -- out slv(15:0)
+            ad9361_adc_overflow_ovf         => ad9361.adc_overflow,       -- in  sl
+            ad9361_adc_q0_enable            => ad9361.ch(0).adc.q.enable, -- out sl
+            ad9361_adc_q0_valid             => ad9361.ch(0).adc.q.valid,  -- out sl
+            ad9361_adc_q0_data              => ad9361.ch(0).adc.q.data,   -- out slv(15:0)
+            ad9361_adc_q1_enable            => ad9361.ch(1).adc.q.enable, -- out sl
+            ad9361_adc_q1_valid             => ad9361.ch(1).adc.q.valid,  -- out sl
+            ad9361_adc_q1_data              => ad9361.ch(1).adc.q.data,   -- out slv(15:0)
+            ad9361_adc_underflow_unf        => ad9361.adc_underflow,      -- in  sl
+            ad9361_dac_i0_enable            => ad9361.ch(0).dac.i.enable, -- out sl
+            ad9361_dac_i0_valid             => ad9361.ch(0).dac.i.valid,  -- out sl
+            ad9361_dac_i0_data              => ad9361.ch(0).dac.i.data,   -- in  slv(15:0)
+            ad9361_dac_i1_enable            => ad9361.ch(1).dac.i.enable, -- out sl
+            ad9361_dac_i1_valid             => ad9361.ch(1).dac.i.valid,  -- out sl
+            ad9361_dac_i1_data              => ad9361.ch(1).dac.i.data,   -- in  slv(15:0)
+            ad9361_dac_overflow_ovf         => ad9361.dac_overflow,       -- in  sl
+            ad9361_dac_q0_enable            => ad9361.ch(0).dac.q.enable, -- out sl
+            ad9361_dac_q0_valid             => ad9361.ch(0).dac.q.valid,  -- out sl
+            ad9361_dac_q0_data              => ad9361.ch(0).dac.q.data,   -- in  slv(15:0)
+            ad9361_dac_q1_enable            => ad9361.ch(1).dac.q.enable, -- out sl
+            ad9361_dac_q1_valid             => ad9361.ch(1).dac.q.valid,  -- out sl
+            ad9361_dac_q1_data              => ad9361.ch(1).dac.q.data,   -- in  slv(15:0)
+            ad9361_dac_underflow_unf        => ad9361.dac_underflow,      -- in  sl
+            xb_gpio_in_port                 => nios_xb_gpio_in,
+            xb_gpio_out_port                => nios_xb_gpio_out,
+            xb_gpio_dir_export              => nios_xb_gpio_oe,
+            command_serial_in               => command_serial_in,
+            command_serial_out              => command_serial_out,
+            oc_i2c_arst_i                   => '0',
+            oc_i2c_scl_pad_i                => i2c_scl_in,
+            oc_i2c_scl_pad_o                => i2c_scl_out,
+            oc_i2c_scl_padoen_o             => i2c_scl_oen,
+            oc_i2c_sda_pad_i                => i2c_sda_in,
+            oc_i2c_sda_pad_o                => i2c_sda_out,
+            oc_i2c_sda_padoen_o             => i2c_sda_oen,
+            rx_tamer_ts_sync_in             => '0',
+            rx_tamer_ts_sync_out            => open,
+            rx_tamer_ts_pps                 => '0',
+            rx_tamer_ts_clock               => rx_clock,
+            rx_tamer_ts_reset               => rx_ts_reset,
+            unsigned(rx_tamer_ts_time)      => rx_timestamp,
+            tx_tamer_ts_sync_in             => '0',
+            tx_tamer_ts_sync_out            => open,
+            tx_tamer_ts_pps                 => '0',
+            tx_tamer_ts_clock               => tx_clock,
+            tx_tamer_ts_reset               => tx_ts_reset,
+            unsigned(tx_tamer_ts_time)      => tx_timestamp,
+            rx_trigger_ctl_out_port         => rx_trigger_ctl_i,
+            tx_trigger_ctl_out_port         => tx_trigger_ctl_i,
+            rx_trigger_ctl_in_port          => pack(rx_trigger_ctl),
+            tx_trigger_ctl_in_port          => pack(tx_trigger_ctl),
+            wbm_wb_clk_i                    => wbm_wb_clk_i,
+            wbm_wb_rst_i                    => wbm_wb_rst_i,
+            wbm_wb_adr_o                    => wbm_wb_adr_o,
+            wbm_wb_dat_o                    => wbm_wb_dat_o,
+            wbm_wb_dat_i                    => wbm_wb_dat_i,
+            wbm_wb_we_o                     => wbm_wb_we_o,
+            wbm_wb_sel_o                    => wbm_wb_sel_o,
+            wbm_wb_stb_o                    => wbm_wb_stb_o,
+            wbm_wb_ack_i                    => wbm_wb_ack_i,
+            wbm_wb_cyc_o                    => wbm_wb_cyc_o
+        );
+
+    -- FX3 UART
+    command_serial_in <= fx3_uart_txd       when sys_reset = '0' else '1';
+    fx3_uart_rxd      <= command_serial_out when sys_reset = '0' else 'Z';
+
+    -- FX3 UART CTS and Flash SPI CSx are tied to the same signal.
+    -- Allow SPI accesses when FPGA is in reset
+    fx3_uart_cts      <= '1' when sys_reset_pclk = '0' else 'Z';
+
+    -- Unpack the Nios general-purpose outputs into a record
+    nios_gpio.o <= unpack(nios_gpo_slv);
+
+    -- Readback of Nios general-purpose outputs
+    nios_gpio.i.gpo_readback <= nios_gpio.o;
+
+    -- RFFE GPIO outputs
+    adi_ctrl_in    <= unpack(rffe_gpio.o).ctrl_in;
+    adi_tx_spdt2_v <= unpack(rffe_gpio.o).tx_spdt2;
+    adi_tx_spdt1_v <= unpack(rffe_gpio.o).tx_spdt1;
+    tx_bias_en     <= unpack(rffe_gpio.o).tx_bias_en;
+    adi_rx_spdt2_v <= unpack(rffe_gpio.o).rx_spdt2;
+    adi_rx_spdt1_v <= unpack(rffe_gpio.o).rx_spdt1;
+    rx_bias_en     <= unpack(rffe_gpio.o).rx_bias_en;
+    --adi_sync_in    <= unpack(rffe_gpio.o).sync_in;
+    adi_en_agc     <= unpack(rffe_gpio.o).en_agc;
+    adi_txnrx      <= unpack(rffe_gpio.o).txnrx;
+    adi_enable     <= unpack(rffe_gpio.o).enable;
+    adi_reset_n    <= unpack(rffe_gpio.o).reset_n;
+
+    -- Unpack trigger GPIO bits into records
+    rx_trigger_ctl <= unpack(rx_trigger_ctl_i, rx_trigger_line);
+    tx_trigger_ctl <= unpack(tx_trigger_ctl_i, tx_trigger_line);
+
+    -- LEDs
+    led(1) <= led1_blink        when nios_gpio.o.led_mode = '0' else not nios_gpio.o.leds(1);
+    led(2) <= tx_underflow_led  when nios_gpio.o.led_mode = '0' else not nios_gpio.o.leds(2);
+    led(3) <= rx_overflow_led   when nios_gpio.o.led_mode = '0' else not nios_gpio.o.leds(3);
+
+    -- Mini exp1
+    --mini_exp1 <= tx_sample_fifo.rreq;
+    --mini_exp2 <= tx_sample_fifo.wreq;
+    --mini_exp1 <= tick_s;
+    --mini_exp2 <= t2_clock_s;
+    --mini_exp1   <=  tx_sample_fifo.rdata(31);
+    --mini_exp2   <= '1' when (tx_sample_fifo.rdata(31 downto 28) = tx_sample_fifo.rdata(23 downto 20)) and 
+    --                        (tx_sample_fifo.rdata(23 downto 20) = tx_sample_fifo.rdata(15 downto 12)) and 
+    --                        (tx_sample_fifo.rdata(15 downto 12) = tx_sample_fifo.rdata(7 downto 4)) else '0';    
+
+    -- DAC SPI (data latched on falling edge)
+    dac_sclk <= not nios_sclk when nios_gpio.o.adf_chip_enable = '0' else '0';
+    dac_sdi  <= nios_sdio     when nios_gpio.o.adf_chip_enable = '0' else '0';
+    dac_csn  <= nios_ss_n(0)  when nios_gpio.o.adf_chip_enable = '0' else '1';
+
+    -- ADF SPI (data latched on rising edge)
+    adf_sclk <= nios_sclk    when nios_gpio.o.adf_chip_enable = '1' else '0';
+    adf_sdi  <= nios_sdio    when nios_gpio.o.adf_chip_enable = '1' else '0';
+    adf_csn  <= nios_ss_n(1) when nios_gpio.o.adf_chip_enable = '1' else '1';
+    adf_ce   <= nios_gpio.o.adf_chip_enable;
+
+    nios_sdo <= adf_muxout when ((nios_ss_n(1) = '0') and (nios_gpio.o.adf_chip_enable = '1'))
+                else '0';
+
+    -- Power monitor I2C
+    pwr_scl     <= i2c_scl_out when i2c_scl_oen = '0' else 'Z';
+    pwr_sda     <= i2c_sda_out when i2c_sda_oen = '0' else 'Z';
+
+    i2c_scl_in  <= pwr_scl;
+    i2c_sda_in  <= pwr_sda;
+
+    -- TPS2115A status
+    nios_gpio.i.pwr_status <= pwr_status;
+
+    -- SI53304 controls / clock output enables
+    si_clock_sel <= nios_gpio.o.si_clock_sel;
+    c5_clock2_oe <= '1';
+    exp_clock_oe <= exp_present and exp_clock_req;
+    ufl_clock_oe <= nios_gpio.o.ufl_clock_oe;
+
+    -- Expansion I2C
+    exp_i2c_scl <= 'Z';
+    exp_i2c_sda <= 'Z';
+
+    -- Expansion GPIO outputs
+    generate_xb_gpio_out : for i in exp_gpio'range generate
+        exp_gpio(i) <= nios_xb_gpio_out(i) when nios_xb_gpio_oe(i) = '1' else 'Z';
+    end generate;
+
+    tx_packet_ready <= '1';
+
+    -- ###################
+    -- TX Submodule
+    -- ###################
+    -- TX sample fifo
+    tx_sample_fifo.aclr <= sys_pll_reset ;
+    tx_sample_fifo.wclock <= fx3_pclk_pll ;
+    tx_sample_fifo.rclock <= ts_data_clock_pres_s ;
+    U_tx_sample_fifo : entity work.tx_fifo
+      generic map (
+        LPM_NUMWORDS        => TX_FIFO_LENGTH
+      )
+      port map (
+        aclr                => tx_sample_fifo.aclr,
+        data                => tx_sample_fifo.wdata,
+        rdclk               => tx_sample_fifo.rclock,
+        rdreq               => tx_sample_fifo.rreq,
+        wrclk               => tx_sample_fifo.wclock,
+        wrreq               => tx_sample_fifo.wreq,
+        q                   => tx_sample_fifo.rdata,
+        rdempty             => tx_sample_fifo.rempty,
+        rdfull              => tx_sample_fifo.rfull,
+        rdusedw             => tx_sample_fifo.rused,
+        wrempty             => tx_sample_fifo.wempty,
+        wrfull              => tx_sample_fifo.wfull,
+        wrusedw             => tx_sample_fifo.wused
+      );
+
+    --------------------------------------------------
+    -- Count the number of write request
+    /*process (tx_sample_fifo.wreq, sys_pll_reset) begin
+        if sys_pll_reset = '1' then 
+            wreq_counter_s <= (others => '0');
+        elsif rising_edge(tx_sample_fifo.wreq) then
+            wreq_counter_s <= wreq_counter_s + 1;
+        end if;
+    end process;*/
+    --------------------------------------------------
+
+    /*U_fifo2ts : component fifo2ts
+    port map(
+        clk         => fx3_pclk_pll,                                     
+        rst         => fx3_pclk_pll_reset,
+        fifo_data   => tx_sample_fifo.rdata,
+        fifo_empty  => tx_sample_fifo.rempty,
+        fifo_rd_en  => tx_sample_fifo.rreq,
+        ts_data     => ts_data_s,
+        ts_valid    => ts_data_valid_s,
+        ts_busy     => ts_busy_g1_s
+    );*/
+
+    U_fifo2ts : component fifo2ts
+    generic map(
+        NUM_STREAMS           => NUM_MIMO_STREAMS,
+        FIFO_READ_THROTTLE    => 0, -- TODO: can this be 0 ?
+        FIFO_USEDW_WIDTH      => tx_sample_fifo.rused'length,
+        FIFO_DATA_WIDTH       => tx_sample_fifo.rdata'length,
+        META_FIFO_USEDW_WIDTH => tx_meta_fifo.rused'length,
+        META_FIFO_DATA_WIDTH  => tx_meta_fifo.rdata'length
+    )
+    port map (
+        fifo_clock          =>  ts_data_clock_pres_s,
+        ts_clock            =>  ts_data_clock_pres_s,
+        reset               =>  sys_pll_reset,
+        enable              =>  tx_enable,
+
+        usb_speed           =>  usb_speed_tx,
+        meta_en             =>  '0',
+        packet_en           =>  packet_en_tx,
+        eight_bit_mode_en   =>  eightbit_en_tx,
+        timestamp           =>  tx_timestamp,
+
+        fifo_empty          =>  tx_sample_fifo.rempty,
+        fifo_usedw          =>  tx_sample_fifo.rused,
+        fifo_data           =>  tx_sample_fifo.rdata,
+        fifo_read           =>  tx_sample_fifo.rreq,
+
+        packet_control      =>  tx_packet_control,
+        packet_empty        =>  tx_packet_empty,
+        packet_ready        =>  tx_packet_ready,
+
+        meta_fifo_empty     =>  '0',
+        meta_fifo_usedw     =>  (others => '0'),
+        meta_fifo_data      =>  (others => '0'),
+        meta_fifo_read      =>  open,
+
+        in_sample_controls  =>  dac_controls,
+        out_samples         =>  open,
+
+        underflow_led       =>  tx_underflow_led,
+        underflow_count     =>  open,
+        underflow_duration  =>  x"ffff",
+
+        ts_data             => ts_data_fut_s,
+        ts_valid            => ts_data_valid_s,
+        ts_busy_g1          => ts_busy_g1_s, 
+        ts_busy_g2          => ts_busy_g2_s
+    );
+
+    U_dvb_t2_modulator_g1 : entity work.DVBT2_mod_top
+        port map(
+            clock            => t2_clock_s,               -- fx3_pclk_pll is 100MHz clock
+            clock_x2         => clockx2_s,                            -- Internal OSG RAM clock 200MHz
+           --clock_rif        => t2_clock_s,                           -- Dual clock for output RF
+            reset_n          => not sys_pll_reset,               --       Invert tx_reset to match reset_n
+            -- Reg is unused for now
+            reg_address      => reg_fsm_current_g1.reg_address,        --  avalon_slave.address
+            reg_wr_data      => (others => '0'),        --              .writedata
+            reg_wr_en        => reg_fsm_current_g1.reg_wr_en,                    --              .write
+            reg_chip_en      => reg_fsm_current_g1.reg_chip_en,                    --              .chipselect
+            reg_rd_data      => reg_rd_data_g1_s,                   --              .readdata
+            reg_cmd_ack      => reg_cmd_ack_g1_s,                   --              .waitrequest_n
+            reg_irq          => open,                   --           irq.irq
+            -- Transport stream
+            --ts_data_clk      => fx3_pclk_pll,               --        TS_Clk.clk see if tx_clock works
+            --ts_data_valid    => ts_data_valid_s,                    --            TS.data_valid
+            --ts_data          => ts_data_s,          --              .data
+            --ts_data_refclk   => ts_data_refclk_g1_s,                   --              .data_refclk
+            --ts_data_busy     => open,                   --              .data_busy
+            ts_data_clk      => ts_data_clock_pres_s,               --        TS_Clk.clk see if tx_clock works
+            ts_data_valid    => ts_data_valid_s,                    --            TS.data_valid
+            ts_data          => ts_data_pres_s,          --              .data
+            ts_data_refclk   => ts_data_refclk_g1_s,                   --              .data_refclk
+            ts_data_busy     => ts_busy_g1_s,                   --              .data_busy
+            -- Ram 
+            ram_cs           => ram_cs_g1_s,                   --           RAM.cs
+            ram_burst_access => ram_burst_access_g1_s,                   --              .burst_access
+            ram_burst_size   => ram_burst_size_g1_s,                   --              .burst_size
+            ram_address      => ram_address_g1_s,                   --              .address
+            ram_wr_en        => ram_wr_en_g1_s,                   --              .wr_en
+            ram_wrdata       => ram_wrdata_g1_s,                   --              .wrdata
+            ram_rd_en        => ram_rd_en_g1_s,                   --              .rd_en
+            ram_rddata       => ram_rddata_g1_s,        --              .rddata
+            ram_rddata_valid => ram_rddata_valid_g1_s,                    --              .rddata_valid
+            ram_busy         => ram_busy_g1_s,                    --              .busy
+            ram_available    => ram_available_g1_s,                    --              .available
+            ram_empty        => ram_empty_g1_s,                    --              .empty
+            -- Baseband output
+            baseband_i       => baseband_fut_i_g1_s,           --      Baseband.i
+            baseband_q       => baseband_fut_q_g1_s,           --              .q
+            baseband_valid   => baseband_valid_g1_s        --              .valid
+            --dac_data_i       => baseband_fut_i_s,
+            --dac_data_q       => baseband_fut_q_s
+            --baseband_i       => open,           --      Baseband.i
+            --baseband_q       => open,           --              .q
+            --baseband_valid   => open        --              .valid
+        );
+
+        U_dvb_t2_modulator_g2 : entity work.DVBT2_mod_top
+        port map(
+            clock            => t2_clock_s,               -- fx3_pclk_pll is 100MHz clock
+            clock_x2         => clockx2_s,                            -- Internal OSG RAM clock 200MHz
+           --clock_rif        => t2_clock_s,                           -- Dual clock for output RF
+            reset_n          => not sys_pll_reset,               --       Invert tx_reset to match reset_n
+            -- Reg is unused for now
+            reg_address      => reg_fsm_current_g2.reg_address,        --  avalon_slave.address
+            reg_wr_data      => reg_fsm_current_g2.reg_wr_data,        --              .writedata
+            reg_wr_en        => reg_fsm_current_g2.reg_wr_en,                    --              .write
+            reg_chip_en      => reg_fsm_current_g2.reg_chip_en,                    --              .chipselect
+            reg_rd_data      => reg_rd_data_g2_s,                   --              .readdata
+            reg_cmd_ack      => reg_cmd_ack_g2_s,                   --              .waitrequest_n
+            reg_irq          => open,                   --           irq.irq
+            -- Transport stream
+            --ts_data_clk      => fx3_pclk_pll,               --        TS_Clk.clk see if tx_clock works
+            --ts_data_valid    => ts_data_valid_s,                    --            TS.data_valid
+            --ts_data          => ts_data_s,          --              .data
+            --ts_data_refclk   => ts_data_refclk_g2_s,                   --              .data_refclk
+            --ts_data_busy     => open,                   --              .data_busy
+            ts_data_clk      => ts_data_clock_pres_s,               --        TS_Clk.clk see if tx_clock works
+            ts_data_valid    => ts_data_valid_s,                    --            TS.data_valid
+            ts_data          => ts_data_pres_s,          --              .data
+            ts_data_refclk   => ts_data_refclk_g2_s,                   --              .data_refclk
+            ts_data_busy     => ts_busy_g2_s,                   --              .data_busy
+            -- Ram 
+            ram_cs           => ram_cs_g2_s,                   --           RAM.cs
+            ram_burst_access => ram_burst_access_g2_s,                   --              .burst_access
+            ram_burst_size   => ram_burst_size_g2_s,                   --              .burst_size
+            ram_address      => ram_address_g2_s,                   --              .address
+            ram_wr_en        => ram_wr_en_g2_s,                   --              .wr_en
+            ram_wrdata       => ram_wrdata_g2_s,                   --              .wrdata
+            ram_rd_en        => ram_rd_en_g2_s,                   --              .rd_en
+            ram_rddata       => ram_rddata_g2_s,        --              .rddata
+            ram_rddata_valid => ram_rddata_valid_g2_s,                    --              .rddata_valid
+            ram_busy         => ram_busy_g2_s,                    --              .busy
+            ram_available    => ram_available_g2_s,                    --              .available
+            ram_empty        => ram_empty_g2_s,                    --              .empty
+            -- Baseband output
+            baseband_i       => baseband_fut_i_g2_s,           --      Baseband.i
+            baseband_q       => baseband_fut_q_g2_s,           --              .q
+            baseband_valid   => baseband_valid_g2_s        --              .valid
+            --dac_data_i       => baseband_fut_i_s,
+            --dac_data_q       => baseband_fut_q_s
+            --baseband_i       => open,           --      Baseband.i
+            --baseband_q       => open,           --              .q
+            --baseband_valid   => open        --              .valid
+        );
+
+    process(ts_data_clock_pres_s, sys_pll_reset)
+    begin
+        if sys_pll_reset = '1' then
+            ts_data_pres_s <= (others => '0');
+        elsif falling_edge(ts_data_clock_pres_s) then
+            ts_data_pres_s <= ts_data_fut_s;
+        end if;
+    end process;
+
+    baseband_miso_tx(0)(0) <= baseband_fut_i_g1_s;
+    baseband_miso_tx(0)(1) <= baseband_fut_q_g1_s;
+    baseband_miso_tx(1)(0) <= baseband_fut_i_g2_s;
+    baseband_miso_tx(1)(1) <= baseband_fut_q_g2_s;
+
+    dac_assignment_proc : process( all )
+    begin
+        for i in dac_controls'range loop
+            dac_controls(i).enable   <= (ad9361.ch(i).dac.i.enable or ad9361.ch(i).dac.q.enable or tx_loopback_enabled) and
+                                        mimo_tx_enables(i);
+            dac_controls(i).data_req <= (ad9361.ch(i).dac.i.valid  or ad9361.ch(i).dac.q.valid  or tx_loopback_enabled) and
+                                        mimo_tx_enables(i);
+
+            if (rising_edge(t2_clock_s) and baseband_valid_g1_s = '1' and baseband_valid_g2_s = '1') then
+                ad9361.ch(i).dac.i.data  <= std_logic_vector(shift_left(resize(signed(baseband_miso_tx(i)(0)), 16), 2));
+                ad9361.ch(i).dac.q.data  <= std_logic_vector(shift_left(resize(signed(baseband_miso_tx(i)(1)), 16), 2));
+                --ad9361.ch(i).dac.i.data  <= std_logic_vector(baseband_i_s);
+                --ad9361.ch(i).dac.q.data  <= std_logic_vector(baseband_q_s);
+            end if;
+        end loop;
+    end process;
+
+    
+    -- ts_data_clk_divider from 3.2MHz to 400KHz
+    ts_clk_div_fut_s <= "0000" when ts_clk_div_pres_s = "0011" else ts_clk_div_pres_s + 1;
+    ts_data_clock_fut_s <= (not ts_data_clock_pres_s) when ts_clk_div_pres_s = "0011" else ts_data_clock_pres_s;
+
+    ts_clk_div_proc : process (ts_data_clock_x8_s, sys_pll_reset) 
+    begin
+        if sys_pll_reset = '1' then
+            ts_clk_div_pres_s <= "0000";
+            ts_data_clock_pres_s <= '0';
+        elsif rising_edge(ts_data_clock_x8_s) then
+            ts_clk_div_pres_s <= ts_clk_div_fut_s;
+            ts_data_clock_pres_s <= ts_data_clock_fut_s;
+        end if;
+    end process;
+
+
+    -- Internal blockRAM
+    U_blockRAM_g1 : entity work.blockRAM
+    port map(
+        cms0041_clock      => t2_clock_s,
+        ram_cs             => ram_cs_g1_s,
+        ram_burst_access   => ram_burst_access_g1_s,
+        ram_burst_size     => ram_burst_size_g1_s,
+        ram_address        => ram_address_g1_s,
+        ram_wr_en          => ram_wr_en_g1_s,
+        ram_wrdata         => ram_wrdata_g1_s,
+        ram_rd_en          => ram_rd_en_g1_s,
+        ram_rddata         => ram_rddata_g1_s,
+        ram_rddata_valid   => ram_rddata_valid_g1_s,
+        ram_busy           => ram_busy_g1_s,
+        ram_available      => ram_available_g1_s,
+        ram_empty          => ram_empty_g1_s
+    );
+
+    -- Internal blockRAM
+    U_blockRAM_g2 : entity work.blockRAM
+    port map(
+        cms0041_clock      => t2_clock_s,
+        ram_cs             => ram_cs_g2_s,
+        ram_burst_access   => ram_burst_access_g2_s,
+        ram_burst_size     => ram_burst_size_g2_s,
+        ram_address        => ram_address_g2_s,
+        ram_wr_en          => ram_wr_en_g2_s,
+        ram_wrdata         => ram_wrdata_g2_s,
+        ram_rd_en          => ram_rd_en_g2_s,
+        ram_rddata         => ram_rddata_g2_s,
+        ram_rddata_valid   => ram_rddata_valid_g2_s,
+        ram_busy           => ram_busy_g2_s,
+        ram_available      => ram_available_g2_s,
+        ram_empty          => ram_empty_g2_s
+    );
+
+    ----------------------------------------------------------------------------------------
+    -- Resample baseband I/Q output of DVBT2_mod
+    --
+    dvbt2_mod_resampler : process (t2_clock_s, sys_pll_reset)
+    begin
+        if sys_pll_reset = '1' then 
+            resampler_counter_s <= (others => '0');
+            baseband_pres_i_g1_s <= (others => '0');
+            baseband_pres_q_g1_s <= (others => '0');
+            baseband_pres_i_g2_s <= (others => '0');
+            baseband_pres_q_g2_s <= (others => '0');
+
+        elsif rising_edge(t2_clock_s) then 
+            if resampler_counter_s = "0111" then 
+                resampler_counter_s <= "0000";
+
+            else
+                resampler_counter_s <= resampler_counter_s + 1;
+                if resampler_counter_s = "0000" then
+                    baseband_pres_i_g1_s <= baseband_fut_i_g1_s;
+                    baseband_pres_q_g1_s <= baseband_fut_q_g1_s;
+                    baseband_pres_i_g2_s <= baseband_fut_i_g2_s;
+                    baseband_pres_q_g2_s <= baseband_fut_q_g2_s;
+                    tick_s <= not(tick_s);
+                end if;
+    
+            end if;
+        end if;
+    end process;
+    ----------------------------------------------------------------------------------------
+    
+    ---------------------------------------------------------------------------------------- 
+    -- Probe register 0x8004 of group1 T2 core (Stream0Status)
+    read_stream0status_sync : process (t2_clock_s, sys_pll_reset)
+    begin
+        if sys_pll_reset = '1' then 
+            reg_fsm_current_g1 <= REG_FSM_RESET_VALUE_G1;
+        elsif rising_edge(t2_clock_s)then
+            reg_fsm_current_g1 <= reg_fsm_future_g1;
+        end if;
+    end process;
+
+    read_stream0status_comb : process (all)
+    begin
+        reg_fsm_future_g1 <= REG_FSM_RESET_VALUE_G1;
+
+        case reg_fsm_current_g1.state is 
+            when IDLE =>
+                reg_fsm_future_g1.state <= READ_REQ;
+
+            when READ_REQ =>
+                reg_fsm_future_g1.reg_chip_en <= '1';
+                if reg_cmd_ack_g1_s = '0' then 
+                    reg_fsm_future_g1.state <= READ_REQ;
+                else
+                    reg_fsm_future_g1.state <= DATA;
+                end if;
+
+            when DATA =>
+                reg_fsm_future_g1.reg_chip_en <= '0';
+                reg_fsm_future_g1.reg_rd_data <= reg_rd_data_g1_s;
+                reg_fsm_future_g1.state <= DATA;
+            when others =>
+                reg_fsm_future_g1 <= REG_FSM_RESET_VALUE_G1;
+        end case;
+    end process;
+    ---------------------------------------------------------------------------------------- 
+
+    ---------------------------------------------------------------------------------------- 
+    -- Probe register 0x8004 of group2 T2 core (Stream0Status)
+    rw_group2_register_sync : process (t2_clock_s, sys_pll_reset)
+    begin
+        if sys_pll_reset = '1' then 
+            reg_fsm_current_g2 <= REG_FSM_RESET_VALUE_G2;
+        elsif rising_edge(t2_clock_s)then
+            reg_fsm_current_g2 <= reg_fsm_future_g2;
+        end if;
+    end process;
+
+    rw_group2_register_comb : process (all)
+    begin
+        reg_fsm_future_g2 <= REG_FSM_RESET_VALUE_G2;
+
+        case reg_fsm_current_g2.state is 
+            when IDLE =>
+                    reg_fsm_future_g2.state <= WRITE;
+
+            when WRITE =>
+                reg_fsm_future_g2.reg_chip_en <= '1';
+                reg_fsm_future_g2.reg_wr_en <= '1';
+
+                if reg_cmd_ack_g2_s = '0' then
+                    reg_fsm_future_g2.state <= WRITE;
+                else
+                    reg_fsm_future_g2.state <= IDLE_RD;
+                end if; 
+
+            when IDLE_RD =>
+                reg_fsm_future_g2.state <= READ_REQ;
+                reg_fsm_future_g2.reg_address <= x"08014";
+
+            when READ_REQ =>
+                reg_fsm_future_g2.reg_chip_en <= '1';
+                reg_fsm_future_g2.reg_address <= x"08014";
+
+                if reg_cmd_ack_g2_s = '0' then 
+                    reg_fsm_future_g2.state <= READ_REQ;
+                else
+                    reg_fsm_future_g2.state <= DATA;
+                end if;
+
+            when DATA =>
+                reg_fsm_future_g2.reg_address <= x"08014";
+                reg_fsm_future_g2.reg_chip_en <= '0';
+                reg_fsm_future_g2.reg_rd_data <= reg_rd_data_g2_s;
+                reg_fsm_future_g2.state <= IDLE_RD;
+
+            when others =>
+                reg_fsm_future_g2 <= REG_FSM_RESET_VALUE_G2;
+        end case;
+    end process;
+    ---------------------------------------------------------------------------------------- 
+    
+    -- Scaling down baseband I/Q to 12bits
+    /*i_12bits_s <= std_logic_vector(resize(shift_right(signed(baseband_pres_i_s), 2), 12));
+    q_12bits_s <= std_logic_vector(resize(shift_right(signed(baseband_pres_q_s), 2), 12));*/
+
+    ----------------------------------------------------------------------------------------
+    -- Interface I/Q output from dvbt2 to the ad9361
+    --
+    /*dvbt2_to_dac : process (dac_clock_s, sys_pll_reset)
+    begin
+        if sys_pll_reset = '1' then 
+            t2_frame_counter_s  <= (others => '0');
+            dac_frame_s         <= '0';
+            dac_data_s          <= (others => '0');
+        elsif rising_edge(dac_clock_s) then 
+            t2_frame_counter_s <= t2_frame_counter_s + 1;
+            case t2_frame_counter_s is
+                when "0011" =>
+                    t2_frame_counter_s  <= "0000";
+                    dac_frame_s         <= '0';
+                    dac_data_s          <= q_12bits_s(5 downto 0);
+                when "0010" =>
+                    dac_frame_s         <= '0';
+                    dac_data_s          <= i_12bits_s(5 downto 0);
+                when "0001" =>
+                    dac_frame_s         <= '1';
+                    dac_data_s          <= q_12bits_s(11 downto 6);
+                when "0000" => 
+                    dac_frame_s         <= '1';
+                    dac_data_s          <= i_12bits_s(11 downto 6);
+                when others =>
+                    t2_frame_counter_s  <= (others => '0');
+                    dac_frame_s         <= '0';
+                    dac_data_s          <= (others => '0');
+            end case;
+        end if;
+    end process;*/
+    ---------------------------------------------------------------------------------------- 
+
+    -- Relink AD9361 tx frame, clock and data
+    --adi_tx_clock <= dac_clock_s;
+    --adi_tx_frame <= dac_frame_s;
+    --adi_tx_data  <= dac_data_s;
+
+    ---------------------------------------------------------------------------------------- 
+    -- Generate I/Q sawtooth signal with 90 degres phase offset
+    --
+    /*sawtooth_gen : process (t2_clock_s, sys_pll_reset)
+    begin
+        if sys_pll_reset = '1' then 
+            counter_i_s <= (others => '0');
+            counter_q_s <= (others => '0');
+        elsif rising_edge(t2_clock_s) then 
+            counter_i_s <= counter_i_s + 1;
+            counter_q_s <= counter_i_s - 16384;
+        end if;
+    end process;
+
+    baseband_i_s <= std_logic_vector(counter_i_s);
+    baseband_q_s <= (others => '0');
+    baseband_valid_s <= '1';*/
+    ---------------------------------------------------------------------------------------- 
+
+    ---------------------------------------------------------------------------------------- 
+    -- Generate the 188-byte TS stream at the exact byte rate required (NULL-packets) 
+    -- 
+    /*stuff_the_input : PROCESS (tx_clock, tx_reset) BEGIN 
+     IF tx_reset = '1' THEN 
+       byte_count    <= to_unsigned(102, byte_count'LENGTH); 
+       ts_data_valid_s <= '0'; 
+       ts_data_s       <= (OTHERS => '0'); 
+     
+     ELSIF tx_clock'EVENT AND tx_clock='1' THEN 
+       -- Null stuff the HP TS input 
+       ts_data_valid_s <= '1'; 
+     
+       byte_count <= byte_count + 1; 
+       CASE to_integer(byte_count) IS 
+         WHEN 187     =>      -- Next byte is the sync byte 
+                              byte_count <= (OTHERS => '0'); 
+                              ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#47#, 8)); 
+         WHEN 0       =>      ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#1F#, 8)); 
+         WHEN 1       =>      ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#FF#, 8)); 
+         WHEN 2       =>      ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#10#, 8)); 
+         WHEN OTHERS  =>      ts_data_s    <= STD_LOGIC_VECTOR(to_unsigned(16#AA#, 8)); 
+       END CASE; 
+     END IF;   
+    END PROCESS stuff_the_input;*/ 
+    ---------------------------------------------------------------------------------------- 
+
+    --dac_assignment_proc : process( all )
+    --begin
+    --    for i in dac_controls'range loop
+    --        dac_controls(i).enable   <= (ad9361.ch(i).dac.i.enable or ad9361.ch(i).dac.q.enable or tx_loopback_enabled) and
+    --                                    mimo_tx_enables(i);
+    --        dac_controls(i).data_req <= (ad9361.ch(i).dac.i.valid  or ad9361.ch(i).dac.q.valid  or tx_loopback_enabled) and
+    --                                    mimo_tx_enables(i);
+    --
+    --        if (rising_edge(tx_clock) and dac_streams(i).data_v = '1') then
+    --            ad9361.ch(i).dac.i.data  <= std_logic_vector(dac_streams(i).data_i(11 downto 0)) & "0000";
+    --            ad9361.ch(i).dac.q.data  <= std_logic_vector(dac_streams(i).data_q(11 downto 0)) & "0000";
+    --        end if;
+    --    end loop;
+    --end process;
+
+    /*U_tx : entity work.tx
+        generic map (
+            NUM_STREAMS          => dac_controls'length
+        )
+        port map (
+            tx_reset             => tx_reset,
+            tx_clock             => tx_clock,
+            tx_enable            => tx_enable,
+
+            meta_en              => meta_en_tx,
+            timestamp_reset      => tx_ts_reset,
+            usb_speed            => usb_speed_tx,
+            tx_underflow_led     => tx_underflow_led,
+            tx_timestamp         => tx_timestamp,
+
+            -- Triggering
+            trigger_arm          => tx_trigger_ctl.arm,
+            trigger_fire         => tx_trigger_ctl.fire,
+            trigger_master       => tx_trigger_ctl.master,
+            trigger_line         => tx_trigger_line,
+            --trigger_line         => 'Z',
+
+            -- Eightbit mode
+            eight_bit_mode_en    => eightbit_en_tx,
+
+            -- Packet FIFO
+            packet_en            => packet_en_tx,
+            packet_empty         => tx_packet_empty,
+            packet_control       => tx_packet_control,
+            packet_ready         => tx_packet_ready,
+
+            -- Samples from host via FX3
+            sample_fifo_wclock   => fx3_pclk_pll,
+            sample_fifo_wreq     => tx_sample_fifo.wreq,
+            sample_fifo_wdata    => tx_sample_fifo.wdata,
+            --sample_fifo_wdata    => (others => '0'),
+            sample_fifo_wempty   => tx_sample_fifo.wempty,
+            sample_fifo_wfull    => tx_sample_fifo.wfull,
+            sample_fifo_wused    => tx_sample_fifo.wused,
+
+            -- Metadata from host via FX3
+            meta_fifo_wclock     => fx3_pclk_pll,
+            meta_fifo_wreq       => tx_meta_fifo.wreq,
+            meta_fifo_wdata      => tx_meta_fifo.wdata,
+            meta_fifo_wempty     => tx_meta_fifo.wempty,
+            meta_fifo_wfull      => tx_meta_fifo.wfull,
+            meta_fifo_wused      => tx_meta_fifo.wused,
+
+            -- Digital Loopback Interface
+            loopback_enabled     => tx_loopback_enabled,
+            loopback_fifo_wclock => tx_loopback_fifo.wclock,
+            loopback_fifo_wdata  => tx_loopback_fifo.wdata,
+            loopback_fifo_wreq   => tx_loopback_fifo.wreq,
+            loopback_fifo_wfull  => tx_loopback_fifo.wfull,
+            loopback_fifo_wused  => tx_loopback_fifo.wused,
+
+            -- RFFE Interface
+            dac_controls         => dac_controls,
+            dac_streams          => dac_streams
+        );*/
+
+
+    -- ###################
+    -- RX Submodule
+    -- ###################
+    U_rx : entity work.rx
+        generic map (
+            NUM_STREAMS            => adc_controls'length
+        )
+        port map (
+            rx_reset               => rx_reset,
+            rx_clock               => rx_clock,
+            rx_enable              => rx_enable,
+
+            meta_en                => meta_en_rx,
+            timestamp_reset        => rx_ts_reset,
+            usb_speed              => usb_speed_rx,
+            rx_mux_sel             => rx_mux_sel,
+            rx_overflow_led        => rx_overflow_led,
+            rx_timestamp           => rx_timestamp,
+
+            -- Triggering
+            trigger_arm            => rx_trigger_ctl.arm,
+            trigger_fire           => rx_trigger_ctl.fire,
+            trigger_master         => rx_trigger_ctl.master,
+            trigger_line           => rx_trigger_line,
+            --trigger_line           => 'Z',
+
+            -- Eightbit mode
+            eight_bit_mode_en      => eightbit_en_rx,
+
+            -- Packet FIFO
+            packet_en              => packet_en_rx,
+            packet_control         => rx_packet_control,
+            packet_ready           => rx_packet_ready,
+
+            -- Samples to host via FX3
+            sample_fifo_rclock     => fx3_pclk_pll,
+            sample_fifo_raclr      => not rx_enable_pclk,
+            sample_fifo_rreq       => rx_sample_fifo.rreq,
+            sample_fifo_rdata      => rx_sample_fifo.rdata,
+            sample_fifo_rempty     => rx_sample_fifo.rempty,
+            sample_fifo_rfull      => rx_sample_fifo.rfull,
+            sample_fifo_rused      => rx_sample_fifo.rused,
+
+            -- Mini expansion signals
+            mini_exp               => mini_exp2 & mini_exp1,
+            --mini_exp               => 'Z' & 'Z',
+
+            -- Metadata to host via FX3
+            meta_fifo_rclock       => fx3_pclk_pll,
+            meta_fifo_raclr        => not rx_enable_pclk,
+            meta_fifo_rreq         => rx_meta_fifo.rreq,
+            meta_fifo_rdata        => rx_meta_fifo.rdata,
+            meta_fifo_rempty       => rx_meta_fifo.rempty,
+            meta_fifo_rfull        => rx_meta_fifo.rfull,
+            meta_fifo_rused        => rx_meta_fifo.rused,
+
+            -- Digital Loopback Interface
+            loopback_fifo_wenabled => tx_loopback_enabled,
+            loopback_fifo_wreset   => tx_reset,
+            loopback_fifo_wclock   => tx_loopback_fifo.wclock,
+            loopback_fifo_wdata    => tx_loopback_fifo.wdata,
+            loopback_fifo_wreq     => tx_loopback_fifo.wreq,
+            loopback_fifo_wfull    => tx_loopback_fifo.wfull,
+            loopback_fifo_wused    => tx_loopback_fifo.wused,
+
+            -- RFFE Interface
+            adc_controls           => adc_controls,
+            adc_streams            => adc_streams
+        );
+
+    adc_assignment_proc : process( all )
+    begin
+        for i in adc_controls'range loop
+            adc_controls(i).enable   <= (ad9361.ch(i).adc.i.enable or ad9361.ch(i).adc.q.enable) and mimo_rx_enables(i);
+            adc_controls(i).data_req <= '1';
+            adc_streams(i).data_i    <= signed(ad9361.ch(i).adc.i.data);
+            adc_streams(i).data_q    <= signed(ad9361.ch(i).adc.q.data);
+            adc_streams(i).data_v    <= (ad9361.ch(i).adc.i.valid  or ad9361.ch(i).adc.q.valid) and not adc_streams_last_v(i);
+        end loop;
+    end process;
+
+    process(rx_clock)
+    begin
+        if( rx_reset = '1' ) then
+            adc_streams_last_v  <= ( others => '0' ) ;
+        elsif( rising_edge( rx_clock ) ) then
+            for i in adc_controls'range loop
+                adc_streams_last_v(i)  <= ad9361.ch(i).adc.i.valid  or ad9361.ch(i).adc.q.valid;
+            end loop;
+        end if;
+    end process;
+
+    -- ========================================================================
+    -- RESET SYNCHRONIZERS
+    -- ========================================================================
+
+    U_reset_sync_pclk : entity work.reset_synchronizer
+        generic map (
+            INPUT_LEVEL         =>  '1',
+            OUTPUT_LEVEL        =>  '1'
+        )
+        port map (
+            clock               =>  fx3_pclk_pll,
+            async               =>  sys_reset_async,
+            sync                =>  sys_reset_pclk
+        );
+
+    U_reset_sync_sys : entity work.reset_synchronizer
+        generic map (
+            INPUT_LEVEL         =>  '1',
+            OUTPUT_LEVEL        =>  '1'
+        )
+        port map (
+            clock               =>  sys_clock,
+            async               =>  sys_reset_async,
+            sync                =>  sys_reset
+        );
+
+    U_reset_sync_rx : entity work.reset_synchronizer
+        generic map (
+            INPUT_LEVEL         =>  '1',
+            OUTPUT_LEVEL        =>  '1'
+        )
+        port map (
+            clock               =>  rx_clock,
+            async               =>  sys_reset_pclk,
+            sync                =>  rx_reset
+        );
+
+    U_reset_sync_tx : entity work.reset_synchronizer
+        generic map (
+            INPUT_LEVEL         =>  '1',
+            OUTPUT_LEVEL        =>  '1'
+        )
+        port map (
+            clock               =>  tx_clock,
+            async               =>  sys_reset_pclk,
+            sync                =>  tx_reset
+        );
+
+
+    -- ========================================================================
+    -- SYNCHRONIZERS
+    -- ========================================================================
+
+    U_sync_usb_speed_pclk : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  fx3_pclk_pll,
+            async               =>  nios_gpio.o.usb_speed,
+            sync                =>  usb_speed_pclk
+        );
+
+    U_sync_usb_speed_rx : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  rx_clock,
+            async               =>  nios_gpio.o.usb_speed,
+            sync                =>  usb_speed_rx
+        );
+
+    U_sync_usb_speed_tx : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  tx_clock,
+            async               =>  nios_gpio.o.usb_speed,
+            sync                =>  usb_speed_tx
+        );
+
+
+    U_sync_meta_en_pclk : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  fx3_pclk_pll,
+            async               =>  nios_gpio.o.meta_sync,
+            sync                =>  meta_en_pclk
+        );
+
+    U_sync_meta_en_rx : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  rx_clock,
+            async               =>  nios_gpio.o.meta_sync,
+            sync                =>  meta_en_rx
+        );
+
+    U_sync_meta_en_tx : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  tx_clock,
+            async               =>  nios_gpio.o.meta_sync,
+            sync                =>  meta_en_tx
+        );
+
+    U_sync_eightbit_en_pclk : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  fx3_pclk_pll,
+            async               =>  nios_gpio.o.eightbit_en,
+            sync                =>  eightbit_en_pclk
+        );
+
+    U_sync_eightbit_en_rx : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  rx_clock,
+            async               =>  nios_gpio.o.eightbit_en,
+            sync                =>  eightbit_en_rx
+        );
+
+    U_sync_eightbit_en_tx : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  tx_clock,
+            async               =>  nios_gpio.o.eightbit_en,
+            sync                =>  eightbit_en_tx
+        );
+
+    U_sync_packet_en_pclk : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  fx3_pclk_pll,
+            async               =>  nios_gpio.o.packet_en,
+            sync                =>  packet_en_pclk
+        );
+
+    U_sync_packet_en_rx : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  rx_clock,
+            async               =>  nios_gpio.o.packet_en,
+            sync                =>  packet_en_rx
+        );
+
+    U_sync_packet_en_tx : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  tx_clock,
+            async               =>  nios_gpio.o.packet_en,
+            sync                =>  packet_en_tx
+        );
+
+    generate_sync_rx_mux_sel : for i in rx_mux_sel'range generate
+        U_sync_rx_mux_sel : entity work.synchronizer
+            generic map (
+                RESET_LEVEL         =>  '0'
+            )
+            port map (
+                reset               =>  '0',
+                clock               =>  rx_clock,
+                async               =>  nios_gpio.o.rx_mux_sel(i),
+                sync                =>  rx_mux_sel(i)
+            );
+    end generate;
+
+    generate_sync_mimo_rx_en : for i in mimo_rx_enables'range generate
+        U_sync_mimo_rx_en : entity work.synchronizer
+            generic map (
+                RESET_LEVEL         =>  '0'
+                )
+            port map (
+                reset               =>  '0',
+                clock               =>  rx_clock,
+                async               =>  unpack(rffe_gpio.o).mimo_rx_en(i),
+                sync                =>  mimo_rx_enables(i)
+            );
+    end generate;
+
+    generate_sync_mimo_tx_en : for i in mimo_tx_enables'range generate
+        U_sync_mimo_tx_en : entity work.synchronizer
+            generic map (
+                RESET_LEVEL         =>  '0'
+                )
+            port map (
+                reset               =>  '0',
+                clock               =>  tx_clock,
+                async               =>  unpack(rffe_gpio.o).mimo_tx_en(i),
+                sync                =>  mimo_tx_enables(i)
+            );
+    end generate;
+
+    generate_sync_adi_ctrl_out : for i in adi_ctrl_out'range generate
+        U_sync_adi_ctrl_out : entity work.synchronizer
+            generic map (
+                RESET_LEVEL         =>  '0'
+            )
+            port map (
+                reset               =>  '0',
+                clock               =>  sys_clock,
+                async               =>  adi_ctrl_out(i),
+                sync                =>  rffe_gpio.i.ctrl_out(i)
+            );
+    end generate;
+
+    U_sync_adf_muxout : entity work.synchronizer
+        generic map (
+            RESET_LEVEL         =>  '0'
+        )
+        port map (
+            reset               =>  '0',
+            clock               =>  sys_clock,
+            async               =>  adf_muxout,
+            sync                =>  rffe_gpio.i.adf_muxout
+        );
+
+    generate_sync_xb_gpio_in : for i in exp_gpio'range generate
+        U_sync_xb_gpio_in : entity work.synchronizer
+          generic map (
+            RESET_LEVEL         =>  '0'
+          ) port map (
+            reset               =>  '0',
+            clock               =>  sys_clock,
+            async               =>  exp_gpio(i),
+            sync                =>  nios_xb_gpio_in(i)
+          );
+    end generate;
+
+    U_sync_rx_enable : entity work.synchronizer
+        generic map (
+            RESET_LEVEL =>  '0'
+        )
+        port map (
+            reset       =>  rx_reset,
+            clock       =>  rx_clock,
+            async       =>  rx_enable_pclk,
+            sync        =>  rx_enable
+        );
+
+    U_sync_tx_enable : entity work.synchronizer
+        generic map (
+            RESET_LEVEL =>  '0'
+        )
+        port map (
+            reset       =>  tx_reset,
+            clock       =>  tx_clock,
+            async       =>  tx_enable_pclk,
+            sync        =>  tx_enable
+        );
+
+
+    -- ========================================================================
+    -- HANDSHAKES
+    -- ========================================================================
+
+    drive_handshake_timestamp : process( fx3_pclk_pll, sys_reset_pclk )
+    begin
+        if( sys_reset_pclk = '1' ) then
+            timestamp_req <= '0';
+        elsif( rising_edge(fx3_pclk_pll) ) then
+            if( meta_en_pclk = '0' ) then
+                timestamp_req <= '0';
+            else
+                if( timestamp_ack = '0' ) then
+                    timestamp_req <= '1';
+                elsif( timestamp_ack = '1' ) then
+                    timestamp_req <= '0';
+                end if;
+            end if;
+        end if;
+    end process;
+
+    U_handshake_timestamp : entity work.handshake
+        generic map (
+            DATA_WIDTH          =>  tx_timestamp'length
+        )
+        port map (
+            source_clock        =>  tx_clock,
+            source_reset        =>  tx_reset,
+            source_data         =>  std_logic_vector(tx_timestamp),
+
+            dest_clock          =>  fx3_pclk_pll,
+            dest_reset          =>  sys_reset_pclk,
+            unsigned(dest_data) =>  fx3_timestamp,
+            dest_req            =>  timestamp_req,
+            dest_ack            =>  timestamp_ack
+        );
+
+end architecture;
