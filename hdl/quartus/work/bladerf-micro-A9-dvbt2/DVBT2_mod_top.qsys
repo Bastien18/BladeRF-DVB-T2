@@ -114,11 +114,11 @@
   <parameter name="BUILD_CITL_CACHE" value="0" />
   <parameter name="BUILD_CPU_BYTE_ADDR_WIDTH" value="20" />
   <parameter name="BUILD_SDRAM_WORD_ADDR_WIDTH" value="24" />
-  <parameter name="CLOCK_FREQUENCY_KHZ" value="73143" />
+  <parameter name="CLOCK_FREQUENCY_KHZ" value="80000" />
   <parameter name="GUI_BASEBAND_OUTPUT" value="true" />
   <parameter name="GUI_BASE_TO_IF" value="true" />
   <parameter name="GUI_CALCULATE_TS_RATE" value="true" />
-  <parameter name="GUI_CLOCK_RIF_FREQUENCY_KHZ" value="73143" />
+  <parameter name="GUI_CLOCK_RIF_FREQUENCY_KHZ" value="9143" />
   <parameter name="GUI_CRITICAL_FILTER" value="Best" />
   <parameter name="GUI_DAC_PROGRAM" value="true" />
   <parameter name="GUI_DAC_PROG_CLOCK_FREQUENCY_KHZ" value="100000" />

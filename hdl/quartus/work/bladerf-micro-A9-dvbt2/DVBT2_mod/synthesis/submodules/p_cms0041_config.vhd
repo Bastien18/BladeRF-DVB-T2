@@ -2095,22 +2095,22 @@ v_config.cpu_setup_commands(2052) := cpu_command("16#00081ffc#", "16#773209ae#")
 v_config.cpu_setup_commands(2053) := cpu_command("16#00000008#", "16#00000042#");
 v_config.cpu_setup_commands(2054) := cpu_command("16#000c0000#", "16#00000008#");
 v_config.cpu_setup_commands(2055) := cpu_command("16#000c0004#", "16#00000020#");
-v_config.cpu_setup_commands(2056) := cpu_command("16#000c0008#", "16#00003030#");
-v_config.cpu_setup_commands(2057) := cpu_command("16#000c000c#", "16#00400013#");
+v_config.cpu_setup_commands(2056) := cpu_command("16#000c0008#", "16#00003200#");
+v_config.cpu_setup_commands(2057) := cpu_command("16#000c000c#", "16#01780013#");
 v_config.cpu_setup_commands(2058) := cpu_command("16#000c0010#", "16#e0000000#");
 v_config.cpu_setup_commands(2059) := cpu_command("16#000c0014#", "16#00000000#");
-v_config.cpu_setup_commands(2060) := cpu_command("16#000c0018#", "16#02007020#");
+v_config.cpu_setup_commands(2060) := cpu_command("16#000c0018#", "16#0200d020#");
 v_config.cpu_setup_commands(2061) := cpu_command("16#000c001c#", "16#00000000#");
 v_config.cpu_setup_commands(2062) := cpu_command("16#000c0020#", "16#00020200#");
 v_config.cpu_setup_commands(2063) := cpu_command("16#000c0024#", "16#0097284a#");
 v_config.cpu_setup_commands(2064) := cpu_command("16#000c0028#", "16#00008c00#");
-v_config.cpu_setup_commands(2065) := cpu_command("16#000c002c#", "16#006b8030#");
-v_config.cpu_setup_commands(2066) := cpu_command("16#000c0030#", "16#08080000#");
+v_config.cpu_setup_commands(2065) := cpu_command("16#000c002c#", "16#00400018#");
+v_config.cpu_setup_commands(2066) := cpu_command("16#000c0030#", "16#08080008#");
 v_config.cpu_setup_commands(2067) := cpu_command("16#000c0034#", "16#00000000#");
 v_config.cpu_setup_commands(2068) := cpu_command("16#000c0038#", "16#00000000#");
 v_config.cpu_setup_commands(2069) := cpu_command("16#000c003c#", "16#00000000#");
 v_config.cpu_setup_commands(2070) := cpu_command("16#000c0040#", "16#00000000#");
-v_config.cpu_setup_commands(2071) := cpu_command("16#000c0044#", "16#00180000#");
+v_config.cpu_setup_commands(2071) := cpu_command("16#000c0044#", "16#000c0000#");
 v_config.cpu_setup_commands(2072) := cpu_command("16#000c0048#", "16#00000000#");
 v_config.cpu_setup_commands(2073) := cpu_command("16#000c004c#", "16#00000000#");
 v_config.cpu_setup_commands(2074) := cpu_command("16#000c0050#", "16#00000000#");
@@ -2122,14 +2122,14 @@ v_config.cpu_setup_commands(2079) := cpu_command("16#000c0064#", "16#00000000#")
 v_config.cpu_setup_commands(2080) := cpu_command("16#000c0068#", "16#00000000#");
 v_config.cpu_setup_commands(2081) := cpu_command("16#000c006c#", "16#00000000#");
 v_config.cpu_setup_commands(2082) := cpu_command("16#00008000#", "16#00000429#");
--- Reduced setup - single PLP (6 x QAM-256(5/6)).        
-     -- TSP FIFO (raw data bits) 1x 5/6 frame= 13152-bits ->   2 x 6 x 13152 = 157824 bits = 19728 bytes -> 6576 Words 
-     -- .... except in broadcast mode, more buffering is generally required.
-     -- PLP FIFO                2 x 6 x 2025 words = 24300 words => 24304 words (/16 boundary)
-     v_config.sdram_plp_table := ( -- Make position-0 slightly bigger to accomodate T2Adaptation ...
-                                   0      => ( tsp_base_address => 0, tsp_fifo_size => 6576,   plp_fifo_size =>  24304  ),       
-                                   OTHERS => ( tsp_base_address => 0, tsp_fifo_size => 0,      plp_fifo_size =>  0  ));
-     -- Define the size of a one T2MI L1CURRENT buffer location used with the T2MI interface. (in addresses, must be a multiple of 8).
+-- Reduced setup - single PLP (3 x QPSK(1/2)).
+-- TSP FIFO (raw data bits) 1x 1/2 frame= 7032-bits ->  2 x 3 x 7032 = 42192 bits = 5274 bytes -> 1758 Words
+-- .... except in broadcast mode, more buffering is generally required.
+-- PLP FIFO                2 x 3 x 8100 words = 48600 words => 48608 words (/16 boundary)
+v_config.sdram_plp_table := ( -- Make position-0 slightly bigger to accomodate T2Adaptation ...
+                              0      => ( tsp_base_address => 0, tsp_fifo_size => 1758,   plp_fifo_size =>  48608  ),
+                              OTHERS => ( tsp_base_address => 0, tsp_fifo_size => 0,      plp_fifo_size =>  0  ));
+-- Define the size of a one T2MI L1CURRENT buffer location used with the T2MI interface. (in addresses, must be a multiple of 8).
      v_config.sdram_t2mi_l1_current_buffer_size := 0;
      -- Define the size of a one T2MI L1-FUTURE buffer location used with the T2MI interface. (in addresses, must be a multiple of 8).
      v_config.sdram_t2mi_l1_future_buffer_size := 0;

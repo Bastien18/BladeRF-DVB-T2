@@ -171,8 +171,10 @@ architecture dvbt2_bladerf of bladerf is
     signal ts_data_valid_s          : std_logic; 
     signal ts_data_refclk_s         : std_logic;
     signal ts_busy_s                : std_logic;
-    signal ts_data_clock_s          : std_logic;
     signal ts_data_clock_x2_s       : std_logic;
+    signal ts_data_clock_fut_s, ts_data_clock_pres_s          : std_logic;
+    signal ts_data_clock_x8_s       : std_logic;
+    signal ts_clk_div_fut_s, ts_clk_div_pres_s        : unsigned(3 downto 0);
     
     signal t2_clock_s             : std_logic;
     signal clockx2_s              : std_logic;
@@ -211,7 +213,7 @@ architecture dvbt2_bladerf of bladerf is
         state       => IDLE,
         reg_chip_en => '0',
         reg_wr_en   => '0',
-        reg_address => x"08014",
+        reg_address => x"08018",
         reg_rd_data => (others => '0')
     );
 
@@ -340,8 +342,8 @@ begin
             rst      => sys_pll_reset,
             outclk_0 => t2_clock_s,
             outclk_1 => clockx2_s,
-            outclk_2 => open,
-            outclk_3 => dac_clock_s,
+            outclk_2 => dac_clock_s,
+            outclk_3 => open,
             locked   => open
         );
 
@@ -349,8 +351,7 @@ begin
         port map(
             refclk    => c5_clock2,
             rst       => sys_pll_reset,
-            outclk_0  => ts_data_clock_s,
-            outclk_1  => ts_data_clock_x2_s,
+            outclk_0  => ts_data_clock_x8_s,
             locked    => open
         );
 
@@ -667,7 +668,7 @@ begin
     -- TX sample fifo
     tx_sample_fifo.aclr <= sys_pll_reset ;
     tx_sample_fifo.wclock <= fx3_pclk_pll ;
-    tx_sample_fifo.rclock <= t2_clock_s ;
+    tx_sample_fifo.rclock <= ts_data_clock_pres_s ;
     U_tx_sample_fifo : entity work.tx_fifo
       generic map (
         LPM_NUMWORDS        => TX_FIFO_LENGTH
@@ -721,8 +722,8 @@ begin
         META_FIFO_DATA_WIDTH  => tx_meta_fifo.rdata'length
     )
     port map (
-        fifo_clock          =>  t2_clock_s,
-        ts_clock            =>  ts_data_clock_s,
+        fifo_clock          =>  ts_data_clock_pres_s,
+        ts_clock            =>  ts_data_clock_pres_s,
         reset               =>  sys_pll_reset,
         enable              =>  tx_enable,
 
@@ -762,7 +763,7 @@ begin
         port map(
             clock            => t2_clock_s,               -- fx3_pclk_pll is 100MHz clock
             clock_x2         => clockx2_s,                            -- Internal OSG RAM clock 200MHz
-           --clock_rif        => t2_clock_s,                           -- Dual clock for output RF
+            --clock_rif        => dac_clock_s,                           -- Dual clock for output RF
             reset_n          => not sys_pll_reset,               --       Invert tx_reset to match reset_n
             -- Reg is unused for now
             reg_address      => reg_fsm_current.reg_address,        --  avalon_slave.address
@@ -778,7 +779,7 @@ begin
             --ts_data          => ts_data_s,          --              .data
             --ts_data_refclk   => ts_data_refclk_s,                   --              .data_refclk
             --ts_data_busy     => open,                   --              .data_busy
-            ts_data_clk      => ts_data_clock_s,               --        TS_Clk.clk see if tx_clock works
+            ts_data_clk      => ts_data_clock_pres_s,               --        TS_Clk.clk see if tx_clock works
             ts_data_valid    => ts_data_valid_s,                    --            TS.data_valid
             ts_data          => ts_data_pres_s,          --              .data
             ts_data_refclk   => ts_data_refclk_s,                   --              .data_refclk
@@ -807,11 +808,11 @@ begin
             --baseband_valid   => open        --              .valid
         );
 
-    process(ts_data_clock_x2_s, sys_pll_reset)
+    process(ts_data_clock_pres_s, sys_pll_reset)
     begin
         if sys_pll_reset = '1' then
             ts_data_pres_s <= (others => '0');
-        elsif rising_edge(ts_data_clock_x2_s) then
+        elsif falling_edge(ts_data_clock_pres_s) then
             ts_data_pres_s <= ts_data_fut_s;
         end if;
     end process;
@@ -824,13 +825,31 @@ begin
             dac_controls(i).data_req <= (ad9361.ch(i).dac.i.valid  or ad9361.ch(i).dac.q.valid  or tx_loopback_enabled) and
                                         mimo_tx_enables(i);
 
-            if (rising_edge(t2_clock_s) and baseband_valid_s = '1') then
-                ad9361.ch(i).dac.i.data  <= std_logic_vector(shift_left(resize(signed(baseband_pres_i_s), 16), 2));
-                ad9361.ch(i).dac.q.data  <= std_logic_vector(shift_left(resize(signed(baseband_pres_q_s), 16), 2));
+            if (rising_edge(tx_clock) and baseband_valid_s = '1') then
+                ad9361.ch(i).dac.i.data  <= std_logic_vector(shift_left(resize(signed(baseband_fut_i_s), 16), 2));
+                ad9361.ch(i).dac.q.data  <= std_logic_vector(shift_left(resize(signed(baseband_fut_q_s), 16), 2));
                 --ad9361.ch(i).dac.i.data  <= std_logic_vector(baseband_i_s);
                 --ad9361.ch(i).dac.q.data  <= std_logic_vector(baseband_q_s);
             end if;
         end loop;
+    end process;
+
+    --ad9361.ch(0).dac.i.data  <= std_logic_vector(shift_left(resize(signed(baseband_fut_i_s), 16), 2));
+    --ad9361.ch(0).dac.q.data  <= std_logic_vector(shift_left(resize(signed(baseband_fut_q_s), 16), 2));
+    
+    -- ts_data_clk_divider from 3.2MHz to 400KHz
+    ts_clk_div_fut_s <= "0000" when ts_clk_div_pres_s = "0011" else ts_clk_div_pres_s + 1;
+    ts_data_clock_fut_s <= (not ts_data_clock_pres_s) when ts_clk_div_pres_s = "0011" else ts_data_clock_pres_s;
+
+    ts_clk_div_proc : process (ts_data_clock_x8_s, sys_pll_reset) 
+    begin
+        if sys_pll_reset = '1' then
+            ts_clk_div_pres_s <= "0000";
+            ts_data_clock_pres_s <= '0';
+        elsif rising_edge(ts_data_clock_x8_s) then
+            ts_clk_div_pres_s <= ts_clk_div_fut_s;
+            ts_data_clock_pres_s <= ts_data_clock_fut_s;
+        end if;
     end process;
 
     -- Internal blockRAM

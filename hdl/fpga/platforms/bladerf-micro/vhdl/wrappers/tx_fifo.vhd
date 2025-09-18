@@ -16,7 +16,7 @@ entity tx_fifo is
         DELAY_WRUSEDW           : natural := 1;
         INTENDED_DEVICE_FAMILY  : string  := "Cyclone V";
         LPM_NUMWORDS            : natural := 4096;
-        LPM_SHOWAHEAD           : string  := "ON";
+        LPM_SHOWAHEAD           : string  := "OFF";
         LPM_WIDTH               : natural := 32;
         LPM_WIDTH_R             : natural := 32;
         OVERFLOW_CHECKING       : string  := "ON";

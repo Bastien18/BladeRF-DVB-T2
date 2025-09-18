@@ -119,7 +119,7 @@ begin
 	dvbt2mod_0 : component cms0041_wrap
 		generic map (
 			BUILD_DEVICE_FAMILY          => "ALT_CYCLONE_5",
-			CLOCK_FREQUENCY_KHZ          => 73143,
+			CLOCK_FREQUENCY_KHZ          => 80000,
 			CLOCK_RIF_FREQUENCY_KHZ      => 0,
 			BUILD_REGBANK_INITIALISATION => 1,
 			BUILD_MAX_FFT_SIZE           => 2048,
@@ -146,7 +146,7 @@ begin
 			BUILD_BASE_TO_IF             => 0,
 			BUILD_IF_ONLY                => 0,
 			BUILD_DAC_PROGRAM            => 0,
-			DAC_PROG_CLOCK_FREQUENCY_KHZ => 73143,
+			DAC_PROG_CLOCK_FREQUENCY_KHZ => 80000,
 			BUILD_PLL_PROGRAM            => 0,
 			PLL_PROG_CLOCK_FREQUENCY_KHZ => 0,
 			BUILD_OSG_USE_EXTERNAL_RAM   => 0,

@@ -130,6 +130,9 @@ make_revision helix
 # Create the dvbt2
 make_revision dvbt2
 
+# Create the dvbt2-miso
+make_revision dvbt2-miso
+
 
 # Projects created!
 puts "${PROJECT_NAME} projects created!"

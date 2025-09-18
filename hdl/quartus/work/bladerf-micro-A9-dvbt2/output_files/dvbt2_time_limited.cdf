@@ -4,7 +4,7 @@ JedecChain;
 	DefaultMfr(6E);
 
 	P ActionCode(Cfg)
-		Device PartName(5CEBA9F23) Path("C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/bladeRF/hdl/quartus/work/bladerf-micro-A9-dvbt2/output_files/") File("dvbt2_time_limited.sof") MfrSpec(OpMask(1));
+		Device PartName(5CEBA9F23) Path("C:/Users/BPillonel/Documents/ASSISTANAT_PIERRE/HELIX/BladeRF-DVB-T2/hdl/quartus/work/bladerf-micro-A9-dvbt2/output_files/") File("dvbt2_time_limited.sof") MfrSpec(OpMask(1));
 
 ChainEnd;
 

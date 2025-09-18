@@ -85,7 +85,15 @@ package bladerf_p is
             refclk   : in  std_logic := '0'; --  refclk.clk
             rst      : in  std_logic := '0'; --   reset.reset
             outclk_0 : out std_logic;        -- outclk0.clk
-            outclk_1 : out std_logic;
+            locked   : out std_logic         --  locked.export
+        );
+    end component;
+
+    component Probe_clock is
+        port (
+            refclk   : in  std_logic := '0'; --  refclk.clk
+            rst      : in  std_logic := '0'; --   reset.reset
+            outclk_0 : out std_logic;        -- outclk0.clk
             locked   : out std_logic         --  locked.export
         );
     end component;
@@ -239,7 +247,8 @@ package bladerf_p is
     
             ts_data             : out std_logic_vector(7 downto 0);                 -- TS data output
             ts_valid            : out std_logic;                                    -- Validate TS data
-            ts_busy             : in std_logic                                      
+            ts_busy_g1          : in std_logic;
+            ts_busy_g2          : in std_logic                                
         );
     end component;
 

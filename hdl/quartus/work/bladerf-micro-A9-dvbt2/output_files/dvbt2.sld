@@ -1,5 +1,10 @@
 <sld_project_info>
   <sld_infos>
+    <sld_info hpath="DVBT2_mod_top:U_dvb_t2_modulator" name="U_dvb_t2_modulator">
+      <assignment_values>
+        <assignment_value text="QSYS_NAME DVBT2_mod_top HAS_SOPCINFO 1 GENERATION_ID 1757938974"/>
+      </assignment_values>
+    </sld_info>
     <sld_info hpath="nios_system:U_nios_system" name="U_nios_system">
       <assignment_values>
         <assignment_value text="QSYS_NAME nios_system HAS_SOPCINFO 1 GENERATION_ID 1736956076"/>
