@@ -74,8 +74,6 @@ package bladerf_p is
             rst      : in  std_logic := '0'; --   reset.reset
             outclk_0 : out std_logic;        -- outclk0.clk
             outclk_1 : out std_logic;        -- outclk1.clk
-            outclk_2 : out std_logic;        -- outclk2.clk
-            outclk_3 : out std_logic;        -- outclk3.clk
             locked   : out std_logic         --  locked.export
         );
     end component;
@@ -212,8 +210,7 @@ package bladerf_p is
             META_FIFO_DATA_WIDTH  : natural                 := 128
         );
         port(
-            fifo_clock          : in std_logic;
-            ts_clock            : in std_logic;                                     
+            fifo_clock          : in std_logic;                                    
             reset               : in std_logic;
             enable              : in std_logic;
     
@@ -250,6 +247,21 @@ package bladerf_p is
             ts_busy_g1          : in std_logic;
             ts_busy_g2          : in std_logic                                
         );
+    end component;
+
+    component aaf_fir is
+	port (
+		clk              : in  std_logic                     := '0';             --                     clk.clk
+		reset_n          : in  std_logic                     := '0';             --                     rst.reset_n
+		ast_sink_data    : in  std_logic_vector(13 downto 0) := (others => '0'); --   avalon_streaming_sink.data
+		ast_sink_valid   : in  std_logic                     := '0';             --                        .valid
+		ast_sink_error   : in  std_logic_vector(1 downto 0)  := (others => '0'); --                        .error
+		ast_sink_ready   : out std_logic;                                        --                        .ready
+		ast_source_data  : out std_logic_vector(15 downto 0);                    -- avalon_streaming_source.data
+		ast_source_valid : out std_logic;                                        --                        .valid
+		ast_source_error : out std_logic_vector(1 downto 0);                     --                        .error
+		ast_source_ready : in  std_logic                     := '0'              --                        .ready
+	);
     end component;
 
     -- ========================================================================

@@ -34,7 +34,7 @@ end blockRAM;
  
 
 ARCHITECTURE internal OF blockRAM IS
-    CONSTANT  ram_size                   : INTEGER := 70366;
+    CONSTANT  ram_size                   : INTEGER := 86000;
     TYPE    memory_type IS ARRAY (0 TO ram_size-1) OF STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL  ram_data_out                 : STD_LOGIC_VECTOR(31 DOWNTO 0);
     SIGNAL  memory                       : memory_type;
